@@ -1,24 +1,44 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { ArrowLeft, Package, Store, Users } from "lucide-react";
 import { motion } from "motion/react";
+import { getTotalCounts } from "@/app/_lib/data-service"; // Import from your service file
 
 export function Hero() {
+  const [counts, setCounts] = useState({
+    stores: 0,
+    products: 0,
+    sellers: 0,
+  });
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const data = await getTotalCounts();
+        setCounts(data);
+      } catch (err) {
+        console.error("Failed to fetch stats:", err);
+      }
+    }
+    fetchStats();
+  }, []);
+
   const stats = [
-    { label: "متجر نشط", value: "+50", icon: Store },
-    { label: "منتج", value: "+800", icon: Package },
-    { label: "بائع موثوق", value: "+45", icon: Users },
+    { label: "متجر نشط", value: `+${counts.stores}`, icon: Store },
+    { label: "منتج", value: `+${counts.products}`, icon: Package },
+    { label: "بائع موثوق", value: `+${counts.sellers}`, icon: Users },
   ];
 
   return (
     <motion.section
-      dir="rtl" // Force RTL flow for this section
+      dir="rtl"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="relative overflow-hidden border-b py-24 px-6 transition-colors duration-300
         bg-[var(--background)] border-[var(--border)]"
     >
-      {/* Dynamic Gradient Overlay */}
+      {/* Background Polish */}
       <div
         className="absolute inset-0 pointer-events-none opacity-50 dark:opacity-20"
         style={{
@@ -42,55 +62,36 @@ export function Hero() {
 
         <motion.button
           onClick={() => {
-            const element = document.getElementById("stores");
-            if (element) {
-              const targetPosition =
-                element.getBoundingClientRect().top + window.scrollY;
-              const startPosition = window.scrollY;
-              const duration = 50; // Duration in milliseconds (adjust this value)
-
-              const startTime = performance.now();
-
-              const scroll = (currentTime: number) => {
-                const elapsed = currentTime - startTime;
-                const progress = Math.min(elapsed / duration, 1);
-
-                window.scrollTo(
-                  0,
-                  startPosition + (targetPosition - startPosition) * progress,
-                );
-
-                if (progress < 1) {
-                  requestAnimationFrame(scroll);
-                }
-              };
-
-              requestAnimationFrame(scroll);
-            }
+            document
+              .getElementById("stores")
+              ?.scrollIntoView({ behavior: "smooth" });
           }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          className="inline-flex items-center gap-2 px-8 py-4 bg-[var(--marketplace-accent)] text-white rounded-xl font-bold shadow-lg shadow-[var(--marketplace-accent)]/20 hover:bg-[#00d4e8] transition-all mb-16"
+          className="inline-flex items-center gap-2 px-8 py-4 bg-[var(--marketplace-accent)] text-white rounded-xl font-bold shadow-lg shadow-[var(--marketplace-accent)]/20 hover:brightness-110 transition-all mb-16"
         >
           تصفح المتاجر
-          {/* Changed ArrowRight to ArrowLeft for RTL "Forward" action */}
           <ArrowLeft className="w-5 h-5" />
         </motion.button>
 
-        {/* Stats Section - flex-row handles the order naturally under dir="rtl" */}
+        {/* Real Stats Grid */}
         <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">
-          {stats.map((stat, index) => {
+          {stats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <div key={stat.label} className="flex items-center gap-4">
-                <div className="p-3 rounded-xl bg-[var(--marketplace-accent)]/10 text-[var(--marketplace-accent)]">
+              <div key={stat.label} className="flex items-center gap-4 group">
+                <div className="p-3 rounded-xl bg-[var(--marketplace-accent)]/10 text-[var(--marketplace-accent)] group-hover:scale-110 transition-transform">
                   <Icon className="w-6 h-6" />
                 </div>
-                {/* Text alignment is right-aligned for the stat labels */}
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-[var(--marketplace-text-primary)]">
+                  <motion.div
+                    key={stat.value}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="text-2xl font-bold text-[var(--marketplace-text-primary)]"
+                  >
                     {stat.value}
-                  </div>
+                  </motion.div>
                   <div className="text-sm text-[var(--marketplace-text-secondary)]">
                     {stat.label}
                   </div>
@@ -101,7 +102,7 @@ export function Hero() {
         </div>
       </div>
 
-      {/* Decorative radial glow */}
+      {/* Glow Effect */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[var(--marketplace-accent)] opacity-[0.08] dark:opacity-[0.04] blur-[100px] rounded-full pointer-events-none" />
     </motion.section>
   );

@@ -1,6 +1,25 @@
+"use client";
+
 import { motion } from "motion/react";
-import { TrendingUp, TrendingDown } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  Users,
+  Store,
+  Package,
+  DollarSign,
+} from "lucide-react";
 import type { Stat } from "../types";
+
+const iconMap: Record<
+  string,
+  React.ComponentType<{ className?: string; style?: React.CSSProperties }>
+> = {
+  Users,
+  Store,
+  Package,
+  DollarSign,
+};
 
 interface StatCardProps {
   stat: Stat;
@@ -8,7 +27,7 @@ interface StatCardProps {
 }
 
 export function StatCard({ stat, index }: StatCardProps) {
-  const Icon = stat.icon;
+  const Icon = iconMap[stat.icon] || Users;
   const TrendIcon = stat.trend === "up" ? TrendingUp : TrendingDown;
 
   return (

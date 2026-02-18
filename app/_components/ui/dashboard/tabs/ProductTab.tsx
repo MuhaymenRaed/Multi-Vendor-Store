@@ -4,20 +4,41 @@ import { useState } from "react";
 import { SearchBar } from "../components/SearchBar";
 import { ActionButton } from "../components/ActionButton";
 import { TableActions, productActions } from "../components/TableActions";
-import { productsData } from "@/app/_lib/Dummy";
 
-// No more isDark prop needed
-export function ProductsTab() {
-  const [hoveredProductId, setHoveredProductId] = useState<number | null>(null);
+// Define the interface based on your new data schema
+interface ProductsTabProps {
+  data: {
+    id: string | number;
+    name: string;
+    store: string;
+    category: string;
+    price: string;
+    stock: number;
+    status: string;
+  }[];
+}
+
+export function ProductsTab({ data }: ProductsTabProps) {
+  const [hoveredProductId, setHoveredProductId] = useState<
+    string | number | null
+  >(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter products based on search query
+  const filteredProducts = data.filter(
+    (product) =>
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.store.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   return (
     <div className="border border-border rounded-xl overflow-hidden transition-colors duration-300 bg-marketplace-card shadow-sm">
       <div className="p-6 border-b border-border">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <SearchBar
-            value=""
-            onChange={() => {}}
-            placeholder="البحث عن المنتجات..."
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="البحث عن المنتجات أو المتاجر..."
           />
           <ActionButton onClick={() => console.log("Add product")}>
             إضافة منتج
@@ -53,7 +74,7 @@ export function ProductsTab() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {productsData.map((product) => (
+            {filteredProducts.map((product) => (
               <tr
                 key={product.id}
                 className="transition-colors group hover:bg-marketplace-card-hover"
@@ -75,7 +96,7 @@ export function ProductsTab() {
                 <td className="px-6 py-4">
                   <span
                     className={`px-2 py-1 rounded text-xs font-medium ${
-                      product.stock > 20
+                      product.stock >= 10
                         ? "bg-green-500/10 text-green-600 dark:text-green-400"
                         : product.stock > 0
                           ? "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400"
@@ -108,6 +129,13 @@ export function ProductsTab() {
             ))}
           </tbody>
         </table>
+
+        {/* Empty State */}
+        {filteredProducts.length === 0 && (
+          <div className="p-12 text-center text-marketplace-text-secondary">
+            لا يوجد منتجات تطابق بحثك حالياً
+          </div>
+        )}
       </div>
     </div>
   );

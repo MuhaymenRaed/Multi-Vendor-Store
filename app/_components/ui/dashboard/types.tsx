@@ -31,7 +31,7 @@ export interface Product {
 export interface Stat {
   label: string;
   value: string;
-  icon: any;
+  icon: string;
   change: string;
   trend: "up" | "down";
   color: string;

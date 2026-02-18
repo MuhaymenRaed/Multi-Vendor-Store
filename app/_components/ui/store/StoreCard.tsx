@@ -11,7 +11,7 @@ interface StoreCardProps {
     name: string;
     description: string;
     category: string;
-    logo?: string;
+    logo_url?: string;
     isFeatured?: boolean;
   };
 }
@@ -51,9 +51,9 @@ export function StoreCard({ store }: StoreCardProps) {
 
       {/* Store Image/Logo Container */}
       <div className="relative aspect-[4/3] overflow-hidden bg-[var(--marketplace-bg)]">
-        {store.logo ? (
+        {store.logo_url ? (
           <img
-            src={store.logo}
+            src={store.logo_url}
             alt={store.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
           />

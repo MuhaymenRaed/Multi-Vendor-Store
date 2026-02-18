@@ -1,33 +1,62 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "motion/react";
 import { SearchBar } from "../reuseable/SearchBar";
 import { Filters } from "../reuseable/Filters";
 import { StoreCard } from "../ui/store/StoreCard";
-import { useState } from "react";
-import { mockStores, categories } from "@/app/_lib/Dummy";
 import { Hero } from "./Hero";
 import Footer from "./Footer";
-import Link from "next/link"; // Import Link for routing
+import Link from "next/link";
+import { getStores, getCategories } from "@/app/_lib/data-service"; // Use your service
 
 export default function Main() {
+  const [stores, setStores] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState("all");
   const [activeCategory, setActiveCategory] = useState("all");
 
-  // Filter and Sort Logic (Keep this here)
-  const filteredStores = mockStores.filter((store) => {
+  // 1. Fetch live data from Supabase
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [storesData, categoriesData] = await Promise.all([
+          getStores(),
+          getCategories(),
+        ]);
+        setStores(storesData);
+        // Map categories to just names for the Filter component if needed
+        setCategories(categoriesData.map((c: any) => c.name));
+      } catch (error) {
+        console.error("Error loading marketplace data:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  // 2. Filter Logic (Now running on live state)
+  const filteredStores = stores.filter((store) => {
     const matchesSearch =
       store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      store.description.toLowerCase().includes(searchQuery.toLowerCase());
+      (store.description?.toLowerCase() || "").includes(
+        searchQuery.toLowerCase(),
+      );
+
     const matchesCategory =
       activeCategory === "all" || store.category === activeCategory;
+
     return matchesSearch && matchesCategory;
   });
 
+  // 3. Sort Logic
   const sortedStores = [...filteredStores].sort((a, b) => {
-    if (a.isFeatured && !b.isFeatured) return -1;
-    if (!a.isFeatured && b.isFeatured) return 1;
+    if (a.is_featured && !b.is_featured) return -1;
+    if (!a.is_featured && b.is_featured) return 1;
     return 0;
   });
 
@@ -72,29 +101,41 @@ export default function Main() {
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {sortedStores.map((store, index) => (
-                <motion.div
-                  key={store.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  layout
-                  transition={{
-                    duration: 0.4,
-                    delay: index * 0.05,
-                    ease: "easeOut",
-                  }}
-                >
-                  {/* WRAP StoreCard with Link */}
-                  <Link href={`/store/${store.id}`}>
-                    <StoreCard store={store} />
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
+            {loading ? (
+              // Simple Loading Grid
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[1, 2, 3, 4].map((n) => (
+                  <div
+                    key={n}
+                    className="h-64 bg-gray-200/10 animate-pulse rounded-2xl"
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {sortedStores.map((store, index) => (
+                  <motion.div
+                    key={store.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    layout
+                    transition={{
+                      duration: 0.4,
+                      delay: index * 0.05,
+                      ease: "easeOut",
+                    }}
+                  >
+                    {/* Using Slug for SEO-friendly URLs if available, otherwise ID */}
+                    <Link href={`/store/${store.slug || store.id}`}>
+                      <StoreCard store={store} />
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            )}
 
             {/* Empty State */}
-            {sortedStores.length === 0 && (
+            {!loading && sortedStores.length === 0 && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}

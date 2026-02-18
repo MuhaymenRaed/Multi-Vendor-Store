@@ -1,23 +1,29 @@
 import { StatCard } from "../components/Statcard";
-import { statsData, usersData, storesData } from "@/app/_lib/Dummy";
 
-// We no longer need the isDark prop!
-export function OverviewTab() {
+// Define the shape of the data based on your data.ts fetcher
+interface OverviewTabProps {
+  data: {
+    statsData: any[];
+    usersData: any[];
+    storesData: any[];
+  };
+}
+
+export function OverviewTab({ data }: OverviewTabProps) {
+  // Destructure the live data passed from the parent
+  const { statsData, usersData, storesData } = data;
+
   return (
     <>
+      {/* 1. Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
         {statsData.map((stat, index) => (
-          <StatCard
-            key={stat.label}
-            stat={stat}
-            index={index}
-            // Removed isDark prop - StatCard should also be updated to use variables
-          />
+          <StatCard key={stat.label} stat={stat} index={index} />
         ))}
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        {/* Recent Users */}
+        {/* 2. Recent Users */}
         <div className="border border-border rounded-xl p-6 transition-colors duration-300 bg-marketplace-card shadow-sm">
           <h2 className="text-xl font-semibold mb-4 text-marketplace-text-primary">
             المستخدمون الجدد
@@ -36,21 +42,26 @@ export function OverviewTab() {
                     {user.email}
                   </div>
                 </div>
-                <div
-                  className={`px-3 py-1 rounded-full text-xs ${
-                    user.status === "نشط"
-                      ? "bg-green-500/20 text-green-500"
-                      : "bg-muted text-muted-foreground"
-                  }`}
-                >
-                  {user.status}
+                <div className="flex flex-col items-end gap-1">
+                  <div
+                    className={`px-3 py-1 rounded-full text-xs ${
+                      user.status === "نشط"
+                        ? "bg-green-500/20 text-green-500"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {user.status}
+                  </div>
+                  <span className="text-[10px] text-marketplace-text-secondary">
+                    {user.joined}
+                  </span>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Top Stores */}
+        {/* 3. Top Stores */}
         <div className="border border-border rounded-xl p-6 transition-colors duration-300 bg-marketplace-card shadow-sm">
           <h2 className="text-xl font-semibold mb-4 text-marketplace-text-primary">
             أفضل المتاجر
@@ -66,7 +77,8 @@ export function OverviewTab() {
                     {store.name}
                   </div>
                   <div className="text-sm text-marketplace-text-secondary">
-                    {store.products} منتج
+                    {store.products} منتج •{" "}
+                    <span className="text-xs opacity-70">{store.dealer}</span>
                   </div>
                 </div>
                 <div className="text-marketplace-accent font-bold">

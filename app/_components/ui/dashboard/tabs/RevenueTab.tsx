@@ -1,3 +1,5 @@
+"use client";
+
 import {
   TrendingUp,
   TrendingDown,
@@ -6,40 +8,67 @@ import {
   CheckCircle,
   XCircle,
 } from "lucide-react";
-import { revenueData } from "@/app/_lib/Dummy";
 
-// No prop needed anymore
-export function RevenueTab() {
+interface RevenueTabProps {
+  revenueData: {
+    month: string;
+    revenue: number;
+    orders: number;
+    growth: number;
+  }[];
+  // We take statsData to fill the summary cards with live totals
+  statsData: any[];
+}
+
+export function RevenueTab({ revenueData, statsData }: RevenueTabProps) {
+  // Extract live values from the statsData array we built in the data file
+  const totalRev = statsData.find((s) => s.label === "الإيرادات");
+  const totalUsers = statsData.find((s) => s.label === "إجمالي المستخدمين"); // Just as an example
+
+  // Calculate average order value from the revenue list
+  const totalOrdersCount = revenueData.reduce(
+    (acc, curr) => acc + curr.orders,
+    0,
+  );
+  const totalRevenueSum = revenueData.reduce(
+    (acc, curr) => acc + curr.revenue,
+    0,
+  );
+  const avgOrderValue =
+    totalOrdersCount > 0 ? (totalRevenueSum / totalOrdersCount).toFixed(0) : 0;
+
+  const summaryItems = [
+    {
+      label: "إجمالي الإيرادات",
+      value: totalRev?.value || "0 $",
+      trend: totalRev?.change || "+0%",
+      trendType: totalRev?.trend || "up",
+      color: "text-green-500",
+      IconComponent: TrendingUp,
+    },
+    {
+      label: "إجمالي الطلبات",
+      value: totalOrdersCount.toLocaleString("ar-EG"),
+      trend: "+0%", // You can add order growth logic in data-service later
+      trendType: "up",
+      color: "text-blue-500",
+      IconComponent: Package,
+    },
+    {
+      label: "متوسط قيمة الطلب",
+      value: `${avgOrderValue} $`,
+      trend: "+0%",
+      trendType: "up",
+      color: "text-purple-500",
+      IconComponent: DollarSign,
+    },
+  ];
+
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[
-          {
-            label: "إجمالي الإيرادات",
-            value: "197.8 ألف $",
-            icon: TrendingUp,
-            trend: "+23.1%",
-            color: "text-green-500",
-            IconComponent: TrendingUp,
-          },
-          {
-            label: "إجمالي الطلبات",
-            value: "860",
-            icon: Package,
-            trend: "+18.4%",
-            color: "text-blue-500",
-            IconComponent: Package,
-          },
-          {
-            label: "متوسط قيمة الطلب",
-            value: "230 $",
-            icon: DollarSign,
-            trend: "+4.2%",
-            color: "text-purple-500",
-            IconComponent: DollarSign,
-          },
-        ].map((item, idx) => (
+        {summaryItems.map((item, idx) => (
           <div
             key={idx}
             className="border border-border rounded-xl p-6 transition-colors duration-300 bg-marketplace-card shadow-sm"
@@ -53,7 +82,9 @@ export function RevenueTab() {
             <div className="text-3xl font-bold text-marketplace-text-primary">
               {item.value}
             </div>
-            <div className="text-sm text-green-600 dark:text-green-400 mt-1">
+            <div
+              className={`text-sm mt-1 ${item.trendType === "up" ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}
+            >
               {item.trend} عن الشهر الماضي
             </div>
           </div>

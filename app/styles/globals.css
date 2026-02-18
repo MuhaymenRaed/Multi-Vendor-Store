@@ -2,13 +2,14 @@
 
 /* 1. MAP THE THEME ENGINE */
 @theme inline {
-  /* Marketplace Colors */
+  /* Marketplace Colors - Mapped to your UI classes */
   --color-marketplace-bg: var(--marketplace-bg);
   --color-marketplace-accent: var(--marketplace-accent);
   --color-marketplace-text-primary: var(--marketplace-text-primary);
   --color-marketplace-text-secondary: var(--marketplace-text-secondary);
   --color-marketplace-card: var(--marketplace-card-bg);
   --color-marketplace-card-hover: var(--marketplace-card-hover);
+  --color-marketplace-border: var(--border);
 
   /* System Colors */
   --color-background: var(--background);
@@ -41,10 +42,10 @@
 @layer base {
   :root {
     /* Fixed Light Mode */
-    --background: #ffffff; /* Page background */
+    --background: #ffffff;
     --foreground: #1a1a1a;
 
-    --marketplace-bg: #f8f9fa; /* Slightly off-white for sections */
+    --marketplace-bg: #f8f9fa;
     --marketplace-accent: #00bcd4;
     --marketplace-text-primary: #1a1a1a;
     --marketplace-text-secondary: #64748b;
@@ -82,7 +83,6 @@
   }
 
   .dark {
-    /* Keep your working Dark Mode */
     --background: oklch(0.145 0 0);
     --foreground: oklch(0.985 0 0);
 

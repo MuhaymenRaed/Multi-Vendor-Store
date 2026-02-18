@@ -4,20 +4,39 @@ import { useState } from "react";
 import { SearchBar } from "../components/SearchBar";
 import { ActionButton } from "../components/ActionButton";
 import { TableActions, storeActions } from "../components/TableActions";
-import { storesData } from "@/app/_lib/Dummy";
 
-// Removed the interface and prop - pure variable-based styling
-export function StoresTab() {
-  const [hoveredStoreId, setHoveredStoreId] = useState<number | null>(null);
+interface StoresTabProps {
+  data: {
+    id: string | number;
+    name: string;
+    dealer: string;
+    products: number;
+    revenue: string;
+    status: string;
+  }[];
+}
+
+export function StoresTab({ data }: StoresTabProps) {
+  const [hoveredStoreId, setHoveredStoreId] = useState<string | number | null>(
+    null,
+  );
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter logic for the search bar
+  const filteredStores = data.filter(
+    (store) =>
+      store.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      store.dealer.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   return (
     <div className="border border-border rounded-xl overflow-hidden transition-colors duration-300 bg-marketplace-card shadow-sm">
       <div className="p-6 border-b border-border">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <SearchBar
-            value=""
-            onChange={() => {}}
-            placeholder="البحث عن المتاجر..."
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="البحث عن المتاجر أو التجار..."
           />
           <ActionButton onClick={() => console.log("Add store")}>
             إضافة متجر
@@ -50,7 +69,7 @@ export function StoresTab() {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {storesData.map((store) => (
+            {filteredStores.map((store) => (
               <tr
                 key={store.id}
                 className="transition-colors group hover:bg-marketplace-card-hover"
@@ -90,6 +109,13 @@ export function StoresTab() {
             ))}
           </tbody>
         </table>
+
+        {/* Empty Search Result State */}
+        {filteredStores.length === 0 && (
+          <div className="p-12 text-center text-marketplace-text-secondary">
+            لا توجد متاجر تطابق بحثك
+          </div>
+        )}
       </div>
     </div>
   );

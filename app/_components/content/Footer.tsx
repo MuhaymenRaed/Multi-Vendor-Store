@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export default function Footer() {
   return (
     <footer
@@ -31,12 +33,13 @@ export default function Footer() {
               </h3>
               <ul className="space-y-2 text-sm text-[var(--marketplace-text-secondary)]">
                 {group.links.map((link) => (
-                  <li
+                  <Link
                     key={link}
+                    href="#"
                     className="hover:text-[var(--marketplace-accent)] cursor-pointer transition-colors"
                   >
                     {link}
-                  </li>
+                  </Link>
                 ))}
               </ul>
             </div>

@@ -7,7 +7,7 @@ interface ProductCardProps {
     id: string;
     name: string;
     price: number;
-    image?: string;
+    image_url?: string;
     category?: string;
   };
   onClick: () => void;
@@ -24,9 +24,9 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
     >
       {/* Product image container */}
       <div className="relative aspect-square bg-[var(--marketplace-bg)] overflow-hidden">
-        {product.image ? (
+        {product.image_url ? (
           <img
-            src={product.image}
+            src={product.image_url}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
