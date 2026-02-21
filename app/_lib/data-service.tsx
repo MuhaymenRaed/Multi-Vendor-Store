@@ -108,42 +108,32 @@ export async function getUser() {
   return user;
 }
 
+// app/_lib/data-service.ts
 export async function getStorePageData(storeId: string) {
-  // 1. Check if storeId is a valid UUID format
+  if (!storeId) return { store: null, products: [] };
+
   const isUuid =
-    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-5][0-9a-f]{3}-[089ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
       storeId,
     );
 
-  // 2. Fetch Store Details
-  // If it's a UUID, we search 'id'. Otherwise, we search 'slug'.
   const { data: store, error: storeError } = await supabase
     .from("stores")
     .select("*")
     .eq(isUuid ? "id" : "slug", storeId)
-    .single();
+    .maybeSingle(); // <--- This is the key fix for the "coercion" error
 
-  if (storeError || !store) {
-    console.error(
-      "❌ Store Fetch Error:",
-      storeError?.message || "Store not found in DB",
-    );
-    return { store: null, products: [] };
-  }
+  if (storeError || !store) return { store: null, products: [] };
 
-  // 3. Fetch Store Products using the ID we just found
-  const { data: products, error: prodError } = await supabase
+  const { data: products } = await supabase
     .from("products")
     .select("*")
-    .eq("store_id", store.id);
+    .eq("store_id", store.id)
+    .order("created_at", { ascending: false });
 
-  if (prodError) console.error("❌ Products Fetch Error:", prodError.message);
-
-  return {
-    store,
-    products: products || [],
-  };
+  return { store, products: products || [] };
 }
+
 export async function getGrowthMetrics() {
   const now = new Date();
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);

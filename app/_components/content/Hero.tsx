@@ -3,14 +3,10 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, Package, Store, Users } from "lucide-react";
 import { motion } from "motion/react";
-import { getTotalCounts } from "@/app/_lib/data-service"; // Import from your service file
+import { getTotalCounts } from "@/app/_lib/data-service";
 
 export function Hero() {
-  const [counts, setCounts] = useState({
-    stores: 0,
-    products: 0,
-    sellers: 0,
-  });
+  const [counts, setCounts] = useState({ stores: 0, products: 0, sellers: 0 });
 
   useEffect(() => {
     async function fetchStats() {
@@ -35,75 +31,65 @@ export function Hero() {
       dir="rtl"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="relative overflow-hidden border-b py-24 px-6 transition-colors duration-300
-        bg-[var(--background)] border-[var(--border)]"
+      className="relative overflow-hidden pt-32 pb-24 px-6 border-b border-border/40 bg-marketplace-bg"
     >
-      {/* Background Polish */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-50 dark:opacity-20"
-        style={{
-          background:
-            "linear-gradient(180deg, var(--marketplace-card-bg) 0%, var(--marketplace-bg) 100%)",
-        }}
-      />
+      {/* Premium Background Polish */}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Dark Mode Glowing Orbs */}
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-marketplace-accent/10 dark:bg-marketplace-accent/20 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-[#0097a7]/10 dark:bg-[#0097a7]/20 blur-[120px] rounded-full" />
 
-      <div className="relative z-10 max-w-4xl mx-auto text-center">
-        <motion.h1
-          className="text-5xl md:text-6xl font-extrabold mb-6 text-[var(--marketplace-text-primary)] tracking-tight leading-tight"
-          initial={{ y: 20 }}
-          animate={{ y: 0 }}
-        >
-          اكتشف المتاجر المميزة
-        </motion.h1>
-
-        <p className="text-xl text-[var(--marketplace-text-secondary)] max-w-2xl mx-auto mb-10 leading-relaxed">
-          تسوق من مجموعات منتقاة من تجار موثوقين بمنتجات عالية الجودة.
-        </p>
-
-        <motion.button
-          onClick={() => {
-            document
-              .getElementById("stores")
-              ?.scrollIntoView({ behavior: "smooth" });
+        {/* Subtle Grid Pattern */}
+        <div
+          className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='1'%3E%3Cpath d='M36 34v-2h-2v2h2zm4 8h-2v2h2v-2zm8 4h-2v2h2v-2zm-8 2h-2v2h2v-2zm-8-8h-2v2h2v-2zm0 8h-2v2h2v-2zm0-24h-2v2h2v-2zm0 8h-2v2h2v-2zm8 8h-2v2h2v-2zm0 8h-2v2h2v-2zm0-24h-2v2h2v-2zm0 8h-2v2h2v-2zm8 8h-2v2h2v-2zm0 8h-2v2h2v-2zm0-24h-2v2h2v-2zm0 8h-2v2h2v-2zm8 8h-2v2h2v-2zm0 8h-2v2h2v-2zm0-24h-2v2h2v-2zm0 8h-2v2h2v-2zM24 20h-2v2h2v-2zM12 20h-2v2h2v-2zM0 20h-2v2h2v-2zM24 12h-2v2h2v-2zM12 12h-2v2h2v-2zM0 12h-2v2h2v-2zM24 4h-2v2h2v-2zM12 4h-2v2h2v-2zM0 4h-2v2h2v-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
           }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="inline-flex items-center gap-2 px-8 py-4 bg-[var(--marketplace-accent)] text-white rounded-xl font-bold shadow-lg shadow-[var(--marketplace-accent)]/20 hover:brightness-110 transition-all mb-16"
-        >
-          تصفح المتاجر
-          <ArrowLeft className="w-5 h-5" />
-        </motion.button>
+        />
+      </div>
 
-        {/* Real Stats Grid */}
-        <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">
+      <div className="relative z-10 max-w-5xl mx-auto text-center">
+        <motion.div
+          initial={{ y: 30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.8 }}
+        >
+          <h1 className="text-5xl md:text-7xl font-black mb-8 text-marketplace-text-primary tracking-tight leading-[1.15]">
+            اكتشف عالم المتاجر <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-marketplace-accent to-[#0097a7]">
+              بلمسة واحدة
+            </span>
+          </h1>
+          <p className="text-lg md:text-xl text-marketplace-text-secondary max-w-2xl mx-auto mb-12 leading-relaxed opacity-90">
+            منصة تربطك بأفضل التجار المحليين. جودة، ثقة، وسهولة في الوصول.
+          </p>
+        </motion.div>
+
+        <motion.div
+          className="flex flex-wrap items-center justify-center gap-8 md:gap-16 pt-8 border-t border-border/40"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+        >
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <div key={stat.label} className="flex items-center gap-4 group">
-                <div className="p-3 rounded-xl bg-[var(--marketplace-accent)]/10 text-[var(--marketplace-accent)] group-hover:scale-110 transition-transform">
-                  <Icon className="w-6 h-6" />
+              <div
+                key={stat.label}
+                className="flex flex-col items-center gap-2 group"
+              >
+                <div className="text-3xl font-bold text-marketplace-text-primary group-hover:text-marketplace-accent transition-colors">
+                  {stat.value}
                 </div>
-                <div className="text-right">
-                  <motion.div
-                    key={stat.value}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className="text-2xl font-bold text-[var(--marketplace-text-primary)]"
-                  >
-                    {stat.value}
-                  </motion.div>
-                  <div className="text-sm text-[var(--marketplace-text-secondary)]">
-                    {stat.label}
-                  </div>
+                <div className="flex items-center gap-2 text-sm font-medium text-marketplace-text-secondary uppercase tracking-widest">
+                  <Icon className="w-4 h-4 text-marketplace-accent" />
+                  {stat.label}
                 </div>
               </div>
             );
           })}
-        </div>
+        </motion.div>
       </div>
-
-      {/* Glow Effect */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[var(--marketplace-accent)] opacity-[0.08] dark:opacity-[0.04] blur-[100px] rounded-full pointer-events-none" />
     </motion.section>
   );
 }

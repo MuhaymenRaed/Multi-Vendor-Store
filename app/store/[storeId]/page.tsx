@@ -1,36 +1,24 @@
-import { notFound } from "next/navigation";
 import { getStorePageData } from "@/app/_lib/data-service";
-import { StoreClientWrapper } from "@/app/_components/ui/store/StoreClientWrapper";
-import Link from "next/link";
+import StoreClientWrapper from "@/app/_components/ui/store/StoreClientWrapper";
+import { notFound } from "next/navigation";
 
-interface PageProps {
+// Notice: params is now treated as a Promise
+export default async function Page({
+  params,
+}: {
   params: Promise<{ storeId: string }>;
-}
+}) {
+  // 1. Await the params to get the actual storeId
+  const resolvedParams = await params;
+  const storeId = resolvedParams.storeId;
 
-export default async function StorePage({ params }: PageProps) {
-  // 1. Await params (Next.js 15 requirement)
-  const { storeId } = await params;
-
-  // 2. Fetch data from Supabase
+  // 2. Fetch the data using your service
   const { store, products } = await getStorePageData(storeId);
 
-  // 3. Handle 404 if store doesn't exist
+  // 3. Handle the 'not found' case elegantly
   if (!store) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-marketplace-bg">
-        <p className="text-marketplace-text-primary mb-4 text-xl font-semibold">
-          المتجر غير موجود
-        </p>
-        <Link
-          href="/"
-          className="text-marketplace-accent underline hover:text-marketplace-accent/80 transition-colors"
-        >
-          العودة للرئيسية
-        </Link>
-      </div>
-    );
+    notFound();
   }
 
-  // 4. Pass data to the interactive Client Component
   return <StoreClientWrapper store={store} initialProducts={products} />;
 }

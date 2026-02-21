@@ -1,6 +1,7 @@
 import Main from "@/app/_components/content/Main";
 
 import "./styles/globals.css";
+import Header from "./_components/content/Header";
 
 export const metadata = {
   title: "متجر متعدد البائعين",
@@ -10,6 +11,7 @@ export const metadata = {
 export default function Home() {
   return (
     <main dir="rtl">
+      <Header />
       <Main />
     </main>
   );
