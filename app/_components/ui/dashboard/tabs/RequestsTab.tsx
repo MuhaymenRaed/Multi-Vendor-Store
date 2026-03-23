@@ -109,8 +109,9 @@ export function RequestsTab() {
                   <div className="flex items-center gap-2">
                     <Phone size={14} /> <span>{req.phone}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Mail size={14} /> <span>{req.email}</span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Mail size={14} className="shrink-0" />{" "}
+                    <span className="truncate">{req.email}</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <MessageSquare size={14} className="mt-1" />{" "}

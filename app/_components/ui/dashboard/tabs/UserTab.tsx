@@ -356,9 +356,9 @@ function UserRow({
               {displayName}
             </span>
             <div className="flex flex-col gap-0.5">
-              <div className="flex items-center gap-1.5 text-marketplace-text-secondary text-[11px]">
-                <Mail size={12} className="opacity-70" />
-                <span>{displayEmail}</span>
+              <div className="flex items-center gap-1.5 text-marketplace-text-secondary text-[11px] min-w-0">
+                <Mail size={12} className="opacity-70 shrink-0" />
+                <span className="truncate">{displayEmail}</span>
               </div>
               <div className="flex items-center gap-1.5 text-marketplace-accent text-[11px] font-medium">
                 <Phone size={11} className="opacity-70" />

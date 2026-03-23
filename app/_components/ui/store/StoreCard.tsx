@@ -70,15 +70,11 @@ export function StoreCard({ store }: any) {
         >
           {store.description}
         </p>
-
-        <div className="flex items-center justify-between flex-row-reverse mt-auto">
-          <span className="text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-full bg-marketplace-accent/5 text-marketplace-accent font-black border border-marketplace-accent/10">
-            {store.category}
-          </span>
-
+        <div className="flex items-end justify-end flex-row-reverse mt-auto">
           <motion.div
+            initial={{ x: 10, opacity: 0 }}
             animate={{ x: isHovered ? 0 : 10, opacity: isHovered ? 1 : 0 }}
-            className="flex items-center gap-2 text-marketplace-accent text-sm font-bold"
+            className="hidden sm:flex items-center gap-2 text-marketplace-accent text-sm font-bold"
           >
             عرض المتجر
             <ArrowLeft className="w-4 h-4" />

@@ -92,9 +92,9 @@ export function OverviewTab({ data }: OverviewTabProps) {
                 المستخدمون الجدد
               </h2>
             </div>
-            <button className="cursor-pointer text-marketplace-text-secondary hover:text-marketplace-accent transition-colors">
+            <div className="text-marketplace-text-secondary">
               <ArrowUpLeft size={20} />
-            </button>
+            </div>
           </div>
 
           <div className="space-y-4">
@@ -108,11 +108,11 @@ export function OverviewTab({ data }: OverviewTabProps) {
                     <div className="w-12 h-12 rounded-full bg-linear-to-tr from-marketplace-accent/20 to-marketplace-accent/5 flex items-center justify-center text-marketplace-accent font-black border border-marketplace-accent/10">
                       {user.name?.charAt(0) || "م"}
                     </div>
-                    <div className="text-start">
+                    <div className="text-start min-w-0 flex-1 max-w-[140px] sm:max-w-[220px]">
                       <div className="font-bold text-marketplace-text-primary group-hover:text-marketplace-accent transition-colors">
                         {user.name}
                       </div>
-                      <div className="text-xs text-marketplace-text-secondary">
+                      <div className="text-xs text-marketplace-text-secondary break-all truncate">
                         {user.email}
                       </div>
                     </div>
@@ -157,7 +157,7 @@ export function OverviewTab({ data }: OverviewTabProps) {
                 أفضل المتاجر أداءً
               </h2>
             </div>
-            <button className="cursor-pointer text-marketplace-text-secondary hover:text-marketplace-accent transition-colors">
+            <button className=" text-marketplace-text-secondary transition-colors">
               <ArrowUpLeft size={20} />
             </button>
           </div>

@@ -295,9 +295,9 @@ export default function ProfilePage() {
                 <h2 className="text-3xl font-black text-marketplace-text-primary">
                   {formData.full_name || "مستخدم"}
                 </h2>
-                <p className="text-marketplace-text-secondary flex items-center justify-center sm:justify-start gap-2">
-                  <Mail size={14} />
-                  {user?.email}
+                <p className="text-marketplace-text-secondary flex items-center justify-center sm:justify-start gap-2 min-w-0">
+                  <Mail size={14} className="shrink-0" />
+                  <span className="truncate">{user?.email}</span>
                 </p>
               </div>
 

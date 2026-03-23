@@ -1,4 +1,4 @@
-import { createServerClient } from "@supabase/ssr"; // Update this import
+import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 export const supabaseCookiesServer = async () => {
@@ -9,21 +9,17 @@ export const supabaseCookiesServer = async () => {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value;
+        getAll() {
+          return cookieStore.getAll();
         },
-        set(name: string, value: string, options: any) {
+        setAll(cookiesToSet) {
           try {
-            cookieStore.set({ name, value, ...options });
-          } catch (error) {
-            // Handle middleware/server component cookie setting limits
-          }
-        },
-        remove(name: string, options: any) {
-          try {
-            cookieStore.set({ name, value: "", ...options });
-          } catch (error) {
-            // Handle middleware/server component cookie removal limits
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options),
+            );
+          } catch {
+            // setAll is called from a Server Component — can be ignored
+            // since the middleware handles the refresh
           }
         },
       },

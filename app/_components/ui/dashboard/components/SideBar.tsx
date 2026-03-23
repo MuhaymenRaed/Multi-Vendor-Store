@@ -27,7 +27,11 @@ interface SidebarProps {
 
 const navigationItems = [
   { id: "overview" as const, label: "نظرة عامة", icon: TrendingUp },
-  { id: "requests" as const, label: "طلبات المتاجر", icon: ClipboardList },
+  {
+    id: "requests" as const,
+    label: "طلبات المتاجرة",
+    icon: ClipboardList,
+  },
   { id: "users" as const, label: "المستخدمين", icon: Users },
   { id: "stores" as const, label: "المتاجر", icon: Store },
   { id: "products" as const, label: "المنتجات", icon: Package },
