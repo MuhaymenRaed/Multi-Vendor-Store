@@ -100,7 +100,7 @@ export default function LoginPage() {
     >
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-3 mb-4 group">
-          <div className="w-15 h-15 rounded-[12px] bg-marketplace-accent/5 border border-marketplace-accent/10 flex items-center justify-center shadow-sm backdrop-blur-sm transition-all duration-300 group-hover:bg-marketplace-accent/10 group-hover:border-marketplace-accent/30 group-hover:scale-105">
+          <div className="w-15 h-15 rounded-2xl bg-marketplace-accent/5 border border-marketplace-accent/10 flex items-center justify-center shadow-sm backdrop-blur-sm transition-all duration-300 group-hover:bg-marketplace-accent/10 group-hover:border-marketplace-accent/30 group-hover:scale-105">
             <LogoIcon className="w-10 h-10 text-marketplace-text-primary group-hover:text-marketplace-accent transition-colors duration-300" />
           </div>
         </div>
@@ -171,7 +171,7 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full flex cursor-pointer items-center justify-center gap-2 bg-gradient-to-r from-marketplace-accent to-[#0097a7] text-white font-bold py-3 rounded-xl shadow-lg shadow-marketplace-accent/20 hover:opacity-90 transition-opacity mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
+          className="w-full flex cursor-pointer items-center justify-center gap-2 bg-linear-to-r from-marketplace-accent to-marketplace-accent-dark text-white font-bold py-3 rounded-xl shadow-lg shadow-marketplace-accent/20 hover:opacity-90 transition-opacity mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "دخول"}
         </button>

@@ -23,14 +23,14 @@ export function ElegantLoader({
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0 rounded-full border-y-2 border-r-2 border-transparent border-t-marketplace-accent border-r-[#0097a7] opacity-80"
+          className="absolute inset-0 rounded-full border-y-2 border-r-2 border-transparent border-t-marketplace-accent border-r-marketplace-accent-dark opacity-80"
         />
 
         {/* Inner Counter-Spinning Ring */}
         <motion.div
           animate={{ rotate: -360 }}
           transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-3 rounded-full border-x-2 border-b-2 border-transparent border-b-[#0097a7] border-l-marketplace-accent opacity-60"
+          className="absolute inset-3 rounded-full border-x-2 border-b-2 border-transparent border-b-marketplace-accent-dark border-l-marketplace-accent opacity-60"
         />
 
         {/* Center Static Icon with Pulse */}

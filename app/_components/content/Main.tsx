@@ -160,11 +160,11 @@ export default function Main() {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ duration: 0.3, delay: index * 0.05 }}
-                    className="relative"
+                    className="relative h-full"
                   >
                     <Link
                       href={`/store/${store.slug || store.id}`}
-                      className={`block group rounded-3xl transition-all duration-500 ${
+                      className={`block h-full group rounded-3xl transition-all duration-500 ${
                         isMyStore
                           ? "ring-2 ring-marketplace-accent ring-offset-4 ring-offset-marketplace-bg shadow-xl shadow-marketplace-accent/10"
                           : ""
@@ -178,7 +178,7 @@ export default function Main() {
                       )}
 
                       <div
-                        className={`rounded-3xl transition-all duration-300 ${
+                        className={`h-full rounded-3xl transition-all duration-300 ${
                           isMyStore
                             ? "border-2 border-marketplace-accent/50"
                             : "border border-transparent"

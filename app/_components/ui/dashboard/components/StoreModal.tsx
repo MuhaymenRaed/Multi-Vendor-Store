@@ -184,17 +184,18 @@ export function StoreModal({
         const submissionData = { ...formData, logo_url: finalLogoUrl };
         await updateStore(store.id, submissionData);
       } else {
-        const { data: newStore, error: createError } = await adminUpsertStore(
-          undefined,
-          { ...formData, logo_url: "" },
-        );
-
-        if (createError) throw createError;
+        const newStore = await adminUpsertStore(undefined, {
+          ...formData,
+          logo_url: "",
+        });
 
         if (selectedFile && newStore?.id) {
           finalLogoUrl =
             (await uploadStoreLogo(newStore.id, selectedFile)) ?? finalLogoUrl;
-          await updateStore(newStore.id, { logo_url: finalLogoUrl });
+          await updateStore(newStore.id, {
+            ...formData,
+            logo_url: finalLogoUrl,
+          });
         }
       }
 
@@ -228,7 +229,7 @@ export function StoreModal({
           dir="rtl"
         >
           {/* Header */}
-          <div className="px-8 py-6 border-b border-marketplace-border flex items-center justify-between bg-gradient-to-l from-marketplace-accent/5 to-transparent flex-shrink-0">
+          <div className="px-8 py-6 border-b border-marketplace-border flex items-center justify-between bg-linear-to-l from-marketplace-accent/5 to-transparent flex-shrink-0">
             <h2 className="text-xl font-black text-marketplace-text-primary flex items-center gap-3">
               <div className="p-2 bg-marketplace-accent/20 rounded-xl text-marketplace-accent">
                 <Store size={20} />

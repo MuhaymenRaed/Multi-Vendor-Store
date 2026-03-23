@@ -105,7 +105,7 @@ export function OverviewTab({ data }: OverviewTabProps) {
                   className="group flex items-center justify-between p-4 rounded-2xl transition-all bg-marketplace-bg/50 hover:bg-marketplace-card-hover border border-transparent hover:border-marketplace-border"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-marketplace-accent/20 to-marketplace-accent/5 flex items-center justify-center text-marketplace-accent font-black border border-marketplace-accent/10">
+                    <div className="w-12 h-12 rounded-full bg-linear-to-tr from-marketplace-accent/20 to-marketplace-accent/5 flex items-center justify-center text-marketplace-accent font-black border border-marketplace-accent/10">
                       {user.name?.charAt(0) || "م"}
                     </div>
                     <div className="text-start">

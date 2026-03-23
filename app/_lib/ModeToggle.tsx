@@ -15,7 +15,7 @@ export function ModeToggle() {
 
   if (!mounted) {
     return (
-      <div className="w-10 h-10 p-2.5 rounded-lg bg-[var(--marketplace-bg)] border border-[var(--border)]" />
+      <div className="w-10 h-10 p-2.5 rounded-lg bg-marketplace-bg border border-border" />
     );
   }
 
@@ -26,11 +26,7 @@ export function ModeToggle() {
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="p-2.5 cursor-pointer rounded-lg transition-all border border-[var(--border)]
-        /* Theme aware backgrounds */
-        bg-[var(--marketplace-bg)] hover:bg-[var(--marketplace-card-hover)]
-        text-[var(--marketplace-accent)] shadow-sm
-      "
+      className="p-2.5 cursor-pointer rounded-lg transition-all border border-border bg-marketplace-bg hover:bg-marketplace-card-hover text-marketplace-accent shadow-sm"
       title={isDark ? "الوضع النهاري" : "الوضع الليلي"}
     >
       <AnimatePresence mode="wait" initial={false}>

@@ -115,7 +115,7 @@ export function Sidebar({
         </div>
 
         {/* ADMIN BADGE */}
-        <div className="flex items-center gap-3 mb-10 p-4 rounded-2xl border border-marketplace-accent/10 bg-gradient-to-l from-marketplace-accent/[0.05] to-transparent">
+        <div className="flex items-center gap-3 mb-10 p-4 rounded-2xl border border-marketplace-accent/10 bg-linear-to-l from-marketplace-accent/[0.05] to-transparent">
           <div className="bg-marketplace-accent/10 p-2 rounded-lg">
             <Shield className="w-5 h-5 text-marketplace-accent" />
           </div>

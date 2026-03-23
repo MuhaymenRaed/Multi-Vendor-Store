@@ -3,7 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, Mail, Lock, Loader2, CheckCircle2 } from "lucide-react";
+import {
+  User,
+  Mail,
+  Lock,
+  Loader2,
+  CheckCircle2,
+  ArrowLeft,
+} from "lucide-react";
 import { signUp } from "@/app/_lib/data-services/auth-service";
 import { LogoIcon } from "@/app/_components/reuseable/LogoIcon";
 
@@ -84,7 +91,7 @@ export default function RegisterPage() {
     >
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-3 mb-4 group">
-          <div className="w-15 h-15 rounded-[12px] bg-marketplace-accent/5 border border-marketplace-accent/10 flex items-center justify-center shadow-sm backdrop-blur-sm transition-all duration-300 group-hover:bg-marketplace-accent/10 group-hover:border-marketplace-accent/30 group-hover:scale-105">
+          <div className="w-15 h-15 rounded-2xl bg-marketplace-accent/5 border border-marketplace-accent/10 flex items-center justify-center shadow-sm backdrop-blur-sm transition-all duration-300 group-hover:bg-marketplace-accent/10 group-hover:border-marketplace-accent/30 group-hover:scale-105">
             <LogoIcon className="w-10 h-10 text-marketplace-text-primary group-hover:text-marketplace-accent transition-colors duration-300" />
           </div>
         </div>
@@ -164,7 +171,7 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full flex cursor-pointer items-center justify-center gap-2 bg-gradient-to-r from-marketplace-accent to-[#0097a7] text-white font-bold py-3 rounded-xl shadow-lg shadow-marketplace-accent/20 hover:opacity-90 transition-opacity mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
+          className="w-full flex cursor-pointer items-center justify-center gap-2 bg-linear-to-r from-marketplace-accent to-marketplace-accent-dark text-white font-bold py-3 rounded-xl shadow-lg shadow-marketplace-accent/20 hover:opacity-90 transition-opacity mt-4 disabled:opacity-70 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>
@@ -185,6 +192,14 @@ export default function RegisterPage() {
           تسجيل الدخول
         </Link>
       </p>
+      <div className="mt-4 text-center">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-marketplace-text-primary transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" /> العودة للرئيسية
+        </Link>
+      </div>
     </div>
   );
 }

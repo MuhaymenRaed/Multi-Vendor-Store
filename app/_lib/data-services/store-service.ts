@@ -74,6 +74,7 @@ export async function updateStoreData(storeId: string, updates: any) {
     .from("stores")
     .update(updates)
     .eq("id", storeId)
+    .eq("is_deleted", false)
     .select()
     .maybeSingle();
 

@@ -10,6 +10,7 @@ export default function Footer() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalData, setModalData] = useState({ title: "", content: "" });
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     async function checkRole() {
@@ -17,6 +18,7 @@ export default function Footer() {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) return;
+      setIsLoggedIn(true);
       const { data: profile } = await supabase
         .from("profiles")
         .select("role")
@@ -57,6 +59,8 @@ export default function Footer() {
 
   const isDealer = userRole === "seller" || userRole === "admin";
 
+  const merchantLink = isDealer ? "مجتمع التجار" : "كن تاجرًا";
+
   const linkGroups = [
     {
       title: "للمشترين",
@@ -64,7 +68,7 @@ export default function Footer() {
     },
     {
       title: "للتجار",
-      links: [isDealer ? "مجتمع التجار" : "كن تاجرًا", "الموارد"],
+      links: [merchantLink, "الموارد"],
     },
     {
       title: "قانوني",
@@ -84,17 +88,17 @@ export default function Footer() {
         className="relative mt-24 bg-marketplace-bg overflow-hidden border-t border-border/40"
         dir="rtl"
       >
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-marketplace-accent/50 to-transparent" />
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-linear-to-r from-transparent via-marketplace-accent/50 to-transparent" />
         <div className="max-w-7xl mx-auto px-6 py-16">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 text-right">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 text-center md:text-right">
             <div className="md:col-span-1">
-              <div className="flex items-center gap-2 mb-6 text-marketplace-accent">
+              <div className="flex items-center justify-center md:justify-start gap-2 mb-6 text-marketplace-accent">
                 <Store size={28} strokeWidth={2} />
                 <h3 className="font-extrabold text-xl text-marketplace-text-primary">
                   السوق الإلكتروني
                 </h3>
               </div>
-              <p className="text-sm text-marketplace-text-secondary leading-relaxed max-w-xs">
+              <p className="text-sm text-marketplace-text-secondary leading-relaxed max-w-xs mx-auto md:mx-0">
                 سوق متعدد البائعين يربط المشترين بالتجار الموثوقين.
               </p>
             </div>
@@ -105,12 +109,12 @@ export default function Footer() {
                   {group.title}
                   <span className="absolute -bottom-2 right-0 w-1/2 h-[2px] bg-marketplace-accent/30 rounded-full" />
                 </h3>
-                <ul className="flex flex-col gap-3 text-sm text-marketplace-text-secondary items-start">
+                <ul className="flex flex-col gap-3 text-sm text-marketplace-text-secondary items-center md:items-start">
                   {group.links.map((link) => (
                     <li key={link}>
                       {link === "كن تاجرًا" ? (
                         <Link
-                          href="/merchant"
+                          href={isLoggedIn ? "/merchant" : "/login"}
                           className="hover:text-marketplace-accent hover:pr-2 transition-all duration-300 inline-block text-marketplace-accent font-extrabold relative group"
                         >
                           <span className="absolute -right-3 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-marketplace-accent rounded-full animate-pulse opacity-0 group-hover:opacity-100" />
@@ -138,7 +142,7 @@ export default function Footer() {
               </div>
             ))}
           </div>
-          <div className="mt-16 pt-8 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-marketplace-text-secondary">
+          <div className="mt-16 pt-8 border-t border-border/50 flex items-center justify-center text-sm text-marketplace-text-secondary">
             <p>© {new Date().getFullYear()} لنك الصناعة. جميع الحقوق محفوظة.</p>
           </div>
         </div>

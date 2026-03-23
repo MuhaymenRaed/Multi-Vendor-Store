@@ -5,11 +5,14 @@
   /* Marketplace Colors */
   --color-marketplace-bg: var(--marketplace-bg);
   --color-marketplace-accent: var(--marketplace-accent);
+  --color-marketplace-accent-dark: var(--marketplace-accent-dark);
   --color-marketplace-text-primary: var(--marketplace-text-primary);
   --color-marketplace-text-secondary: var(--marketplace-text-secondary);
   --color-marketplace-card: var(--marketplace-card-bg);
   --color-marketplace-card-hover: var(--marketplace-card-hover);
   --color-marketplace-border: var(--border);
+  --color-marketplace-overlay: var(--marketplace-overlay);
+  --color-marketplace-input-border: var(--marketplace-input-border);
 
   /* Sidebar Specifics */
   --color-sidebar: var(--sidebar);
@@ -40,12 +43,15 @@
 
     --marketplace-bg: #f8fafc;
     --marketplace-accent: #00bcd4;
+    --marketplace-accent-dark: #0097a7;
     --marketplace-text-primary: #1e293b;
     --marketplace-text-secondary: #64748b;
     --marketplace-card-bg: #ffffff;
     --marketplace-card-hover: #f1f5f9;
+    --marketplace-overlay: rgba(0, 0, 0, 0.5);
+    --marketplace-input-border: #cbd5e1;
 
-    --border: #f1f5f9;
+    --border: #e2e8f0;
     --ring: #00bcd4;
     --radius: 0.85rem;
     --danger: #ef4444;
@@ -59,27 +65,30 @@
   }
 
   .dark {
-    /* Deep Charcoal for Dark Mode Depth */
-    --background: #0a0a0c;
+    /* Softer Dark Mode */
+    --background: #121218;
     --foreground: #f8fafc;
 
-    --marketplace-bg: #0f0f12;
+    --marketplace-bg: #16161d;
     --marketplace-accent: #00bcd4;
+    --marketplace-accent-dark: #0097a7;
     --marketplace-text-primary: #f1f5f9;
     --marketplace-text-secondary: #94a3b8;
-    --marketplace-card-bg: #16161a;
-    --marketplace-card-hover: #1e1e24;
+    --marketplace-card-bg: #1e1e26;
+    --marketplace-card-hover: #26262f;
+    --marketplace-overlay: rgba(0, 0, 0, 0.7);
+    --marketplace-input-border: #3a3a47;
 
-    --border: #1e1e24;
+    --border: #26262f;
     --ring: #00bcd4;
     --danger: #ef4444;
 
     /* Sidebar Dark */
-    --sidebar: #111114;
+    --sidebar: #18181f;
     --sidebar-foreground: #f1f5f9;
     --sidebar-primary: #00bcd4;
-    --sidebar-accent: #1c1c21;
-    --sidebar-border: #1c1c21;
+    --sidebar-accent: #222229;
+    --sidebar-border: #222229;
   }
 }
 
@@ -88,6 +97,14 @@
   html {
     font-size: 90%;
     scroll-behavior: smooth;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Force English/Western digits everywhere */
+  input,
+  textarea,
+  select {
+    font-feature-settings: "tnum";
   }
 
   * {
@@ -96,7 +113,7 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased selection:bg-marketplace-accent/20;
+    @apply bg-background text-foreground antialiased selection:bg-marketplace-accent/30 selection:text-marketplace-text-primary;
   }
 }
 

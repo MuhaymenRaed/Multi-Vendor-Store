@@ -15,7 +15,7 @@ import {
   Search,
   ShieldCheck,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal";
 import { TableActions, buildUserActions } from "../components/TableActions";
@@ -31,6 +31,26 @@ export function UsersTab({ data: initialData }: { data: any[] }) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const ITEMS_PER_PAGE = 20;
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const sentinelRef = useCallback((node: HTMLDivElement | null) => {
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => prev + ITEMS_PER_PAGE);
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    setVisibleCount(ITEMS_PER_PAGE);
+  }, [searchQuery, activeFilter]);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -220,7 +240,7 @@ export function UsersTab({ data: initialData }: { data: any[] }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-marketplace-border/50">
-              {filteredUsers.map((user) => (
+              {filteredUsers.slice(0, visibleCount).map((user) => (
                 <UserRow
                   key={user.id}
                   user={user}
@@ -231,6 +251,21 @@ export function UsersTab({ data: initialData }: { data: any[] }) {
             </tbody>
           </table>
         </div>
+        {visibleCount < filteredUsers.length && (
+          <div ref={sentinelRef} className="flex justify-center py-6">
+            <span className="text-xs text-marketplace-text-secondary font-bold animate-pulse">
+              جاري تحميل المزيد...
+            </span>
+          </div>
+        )}
+        {filteredUsers.length > 0 && (
+          <div className="text-center py-3">
+            <span className="text-xs text-marketplace-text-secondary">
+              عرض {Math.min(visibleCount, filteredUsers.length)} من{" "}
+              {filteredUsers.length}
+            </span>
+          </div>
+        )}
         {filteredUsers.length === 0 && (
           <motion.div
             initial={{ opacity: 0 }}

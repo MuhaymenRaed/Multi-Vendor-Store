@@ -15,7 +15,7 @@ export function StoreCard({ store }: any) {
       whileHover={{ y: -8 }}
       onHoverStart={() => setIsHovered(true)}
       onHoverEnd={() => setIsHovered(false)}
-      className="relative bg-marketplace-card/40 backdrop-blur-md shadow-sm rounded-[2rem] overflow-hidden cursor-pointer group border border-border/50 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,184,212,0.15)] hover:border-marketplace-accent/40"
+      className="relative h-full flex flex-col bg-marketplace-card/40 backdrop-blur-md shadow-sm rounded-[2rem] overflow-hidden cursor-pointer group border border-border/50 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,184,212,0.15)] hover:border-marketplace-accent/40"
     >
       {/* Featured Badge */}
       {store.isFeatured && (
@@ -57,14 +57,17 @@ export function StoreCard({ store }: any) {
           </div>
         )}
         {/* Subtle Overlay Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-t from-marketplace-card via-transparent to-transparent opacity-60 z-10" />
+        <div className="absolute inset-0 bg-linear-to-t from-marketplace-card via-transparent to-transparent opacity-60 z-10" />
       </div>
 
-      <div className="p-6 text-right">
+      <div className="p-6 text-right flex flex-col flex-1">
         <h3 className="text-xl font-black mb-2 text-marketplace-text-primary group-hover:text-marketplace-accent transition-colors duration-300">
           {store.name}
         </h3>
-        <p className="text-sm mb-6 line-clamp-2 leading-relaxed text-marketplace-text-secondary font-medium">
+        <p
+          dir="auto"
+          className="text-sm mb-6 leading-relaxed text-marketplace-text-secondary font-medium line-clamp-2 break-words"
+        >
           {store.description}
         </p>
 

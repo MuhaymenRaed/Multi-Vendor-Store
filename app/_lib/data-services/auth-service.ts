@@ -27,12 +27,19 @@ export const signUp = async ({ email, password, fullName, role }: any) => {
         full_name: fullName,
         role: role,
       },
-      // تأكد أن هذا الرابط هو المسار الصحيح لصفحة التأكيد في مشروعك
       emailRedirectTo: `${window.location.origin}/login`,
     },
   });
 
   if (error) throw new Error(error.message);
+
+  // Supabase returns a fake user with empty identities for already-registered emails
+  if (data.user && data.user.identities?.length === 0) {
+    throw new Error(
+      "هذا البريد الإلكتروني مسجل بالفعل. يرجى تسجيل الدخول بدلاً من ذلك.",
+    );
+  }
+
   return data;
 };
 export async function signIn({ email, password }: any) {

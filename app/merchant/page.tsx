@@ -68,7 +68,7 @@ export default function BecomeMerchantPage() {
 
       <form
         onSubmit={handleSubmit}
-        className="space-y-6 bg-marketplace-card/40 backdrop-blur-2xl p-8 md:p-10 rounded-[3rem] border border-white/5 shadow-2xl relative overflow-hidden"
+        className="space-y-6 bg-marketplace-card/40 backdrop-blur-2xl p-8 md:p-10 rounded-[3rem] border border-border shadow-2xl relative overflow-hidden"
       >
         <div className="absolute top-0 right-0 w-32 h-32 bg-marketplace-accent/5 blur-3xl pointer-events-none" />
 
@@ -81,7 +81,7 @@ export default function BecomeMerchantPage() {
               required
               name="full_name"
               placeholder="الاسم الثلاثي"
-              className="w-full bg-marketplace-bg/30 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-marketplace-accent focus:ring-4 focus:ring-marketplace-accent/5 transition-all"
+              className="w-full bg-marketplace-bg/30 border border-marketplace-input-border rounded-2xl px-5 py-4 outline-none focus:border-marketplace-accent focus:ring-4 focus:ring-marketplace-accent/5 transition-all"
             />
           </div>
           <div className="space-y-2">
@@ -92,7 +92,7 @@ export default function BecomeMerchantPage() {
               required
               name="store_name"
               placeholder="اسم علامتك التجارية"
-              className="w-full bg-marketplace-bg/30 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-marketplace-accent focus:ring-4 focus:ring-marketplace-accent/5 transition-all"
+              className="w-full bg-marketplace-bg/30 border border-marketplace-input-border rounded-2xl px-5 py-4 outline-none focus:border-marketplace-accent focus:ring-4 focus:ring-marketplace-accent/5 transition-all"
             />
           </div>
         </div>
@@ -107,7 +107,7 @@ export default function BecomeMerchantPage() {
               type="email"
               name="email"
               placeholder="example@mail.com"
-              className="w-full bg-marketplace-bg/30 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-marketplace-accent focus:ring-4 focus:ring-marketplace-accent/5 transition-all text-right"
+              className="w-full bg-marketplace-bg/30 border border-marketplace-input-border rounded-2xl px-5 py-4 outline-none focus:border-marketplace-accent focus:ring-4 focus:ring-marketplace-accent/5 transition-all text-right"
             />
           </div>
           <div className="space-y-2">
@@ -118,7 +118,7 @@ export default function BecomeMerchantPage() {
               required
               name="phone"
               placeholder="07XXXXXXXX"
-              className="w-full bg-marketplace-bg/30 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-marketplace-accent focus:ring-4 focus:ring-marketplace-accent/5 transition-all text-left placeholder:text-right"
+              className="w-full bg-marketplace-bg/30 border border-marketplace-input-border rounded-2xl px-5 py-4 outline-none focus:border-marketplace-accent focus:ring-4 focus:ring-marketplace-accent/5 transition-all text-left placeholder:text-right"
               dir="ltr"
             />
           </div>
@@ -132,7 +132,7 @@ export default function BecomeMerchantPage() {
             name="message"
             rows={4}
             placeholder="حدثنا قليلاً عن المنتجات التي تود بيعها..."
-            className="w-full bg-marketplace-bg/30 border border-white/10 rounded-2xl px-5 py-4 outline-none focus:border-marketplace-accent focus:ring-4 focus:ring-marketplace-accent/5 transition-all resize-none"
+            className="w-full bg-marketplace-bg/30 border border-marketplace-input-border rounded-2xl px-5 py-4 outline-none focus:border-marketplace-accent focus:ring-4 focus:ring-marketplace-accent/5 transition-all resize-none"
           />
         </div>
 
@@ -140,7 +140,7 @@ export default function BecomeMerchantPage() {
           disabled={loading}
           className="w-full bg-marketplace-accent text-white py-5 rounded-[1.5rem] font-black text-xl hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,188,212,0.25)] disabled:opacity-70 cursor-pointer overflow-hidden relative group"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+          <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
           {loading ? (
             <ElegantLoader />
           ) : (

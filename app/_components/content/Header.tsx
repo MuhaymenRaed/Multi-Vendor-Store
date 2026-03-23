@@ -126,7 +126,7 @@ export default function Header() {
           </div>
         </Link>
         <div className="flex items-center gap-4">
-          {/* MERCHANT LINK - Only for regular buyers */}
+          {/* MERCHANT LINK - Only for logged-in buyers/guests */}
           {!loading &&
             user &&
             (config.type === "buyer" || config.type === "guest") && (
@@ -136,16 +136,17 @@ export default function Header() {
               >
                 <Link
                   href="/merchant"
-                  className="hidden md:flex items-center gap-2 px-4 py-1.5 text-sm font-bold text-marketplace-accent bg-marketplace-accent/5 border border-marketplace-accent/20 rounded-full hover:bg-marketplace-accent hover:text-white transition-all duration-300 shadow-[0_0_15px_rgba(0,188,212,0.1)]"
+                  className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-1.5 text-xs md:text-sm font-bold text-marketplace-accent bg-marketplace-accent/5 border border-marketplace-accent/20 rounded-full hover:bg-marketplace-accent hover:text-white transition-all duration-300 shadow-[0_0_15px_rgba(0,188,212,0.1)]"
                 >
-                  <Store size={15} />
-                  <span>بيع معنا</span>
+                  <Store size={14} className="md:w-[15px] md:h-[15px]" />
+                  <span className="hidden md:inline">كن تاجرًا</span>
+                  <span className="md:hidden">بيع معنا</span>
                 </Link>
               </motion.div>
             )}
           <div className="flex items-center gap-3">
             {/* 1. Theme Toggle - Styled to match Logo Container */}
-            <div className="w-10 h-10 flex items-center justify-center rounded-[12px] bg-marketplace-card border border-marketplace-border hover:border-marketplace-accent/30 transition-all duration-300 shadow-sm backdrop-blur-md">
+            <div className="w-10 h-10 flex items-center justify-center rounded-2xl bg-marketplace-card border border-marketplace-border hover:border-marketplace-accent/30 transition-all duration-300 shadow-sm backdrop-blur-md">
               <ModeToggle />
             </div>
 
@@ -158,7 +159,7 @@ export default function Header() {
                     whileTap={{ scale: 0.95 }}
                     onClick={handleSignOut}
                     disabled={isSigningOut}
-                    className="w-10 h-10 cursor-pointer flex items-center justify-center rounded-[12px] bg-[var(--danger)]/10 border border-[var(--danger)]/20 text-[var(--danger)] hover:bg-[var(--danger)] hover:text-white/70 disabled:opacity-50 transition-all duration-300 shadow-sm"
+                    className="w-10 h-10 cursor-pointer flex items-center justify-center rounded-2xl bg-(--danger)/10 border border-(--danger)/20 text-(--danger) hover:bg-(--danger) hover:text-white/70 disabled:opacity-50 transition-all duration-300 shadow-sm"
                     title="تسجيل الخروج"
                   >
                     {isSigningOut ? (

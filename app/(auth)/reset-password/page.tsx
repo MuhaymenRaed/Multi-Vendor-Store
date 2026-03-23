@@ -114,7 +114,7 @@ export default function ResetPasswordPage() {
 
                 <button
                   disabled={loading}
-                  className="w-full flex cursor-pointer items-center justify-center gap-2 bg-gradient-to-r from-marketplace-accent to-[#0097a7] text-white font-bold py-4 rounded-xl shadow-lg shadow-marketplace-accent/20 hover:opacity-90 transition-all disabled:opacity-50 active:scale-95"
+                  className="w-full flex cursor-pointer items-center justify-center gap-2 bg-linear-to-r from-marketplace-accent to-marketplace-accent-dark text-white font-bold py-4 rounded-xl shadow-lg shadow-marketplace-accent/20 hover:opacity-90 transition-all disabled:opacity-50 active:scale-95"
                 >
                   {loading ? (
                     <Loader2 className="w-5 h-5 animate-spin" />

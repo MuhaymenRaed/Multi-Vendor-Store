@@ -82,7 +82,7 @@ export function ConfirmPurchaseModal({
               المبلغ الإجمالي
             </span>
             <span className="text-xl font-black text-marketplace-accent">
-              {(product?.price ?? 0).toLocaleString()} د.ع
+              {(product?.price ?? 0).toLocaleString("en-US")} د.ع
             </span>
           </div>
 

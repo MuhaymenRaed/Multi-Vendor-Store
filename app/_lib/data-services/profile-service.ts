@@ -10,6 +10,7 @@ export async function getProfile(id: string) {
     .from("profiles")
     .select("*")
     .eq("id", id)
+    .eq("is_deleted", false)
     .single();
   if (error) return null;
   return data;

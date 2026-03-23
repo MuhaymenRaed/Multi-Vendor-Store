@@ -123,7 +123,7 @@ function ConfirmOrderPageContent() {
               className="group relative flex items-center justify-center gap-3 w-full py-5 rounded-2xl bg-primary text-primary-foreground font-bold overflow-hidden transition-all hover:brightness-110 active:scale-[0.98]"
             >
               {/* Shimmer Effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer pointer-events-none" />
+              <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer pointer-events-none" />
               <Home className="w-5 h-5" />
               العودة للرئيسية
               <ArrowRight className="w-4 h-4 mr-1 group-hover:-translate-x-2 transition-transform duration-300 rotate-180" />

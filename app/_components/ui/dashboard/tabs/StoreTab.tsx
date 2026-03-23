@@ -18,7 +18,7 @@ import {
   TrendingUp,
   User,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal";
 import { StoreModal } from "../components/StoreModal";
 import { TableActions, buildStoreActions } from "../components/TableActions";
@@ -85,6 +85,26 @@ export function StoresTab({
       void supabase.removeChannel(channel);
     };
   }, []);
+
+  const ITEMS_PER_PAGE = 20;
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const sentinelRef = useCallback((node: HTMLDivElement | null) => {
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => prev + ITEMS_PER_PAGE);
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    setVisibleCount(ITEMS_PER_PAGE);
+  }, [searchQuery, activeFilter]);
 
   const statuses = ["الكل", "نشط", "معطل"];
   const filteredStores = data.filter((store) => {
@@ -263,7 +283,7 @@ export function StoresTab({
               </tr>
             </thead>
             <tbody className="divide-y divide-marketplace-border/50">
-              {filteredStores.map((store) => (
+              {filteredStores.slice(0, visibleCount).map((store) => (
                 <StoreRow
                   key={store.id}
                   store={store}
@@ -277,6 +297,21 @@ export function StoresTab({
             </tbody>
           </table>
         </div>
+        {visibleCount < filteredStores.length && (
+          <div ref={sentinelRef} className="flex justify-center py-6">
+            <span className="text-xs text-marketplace-text-secondary font-bold animate-pulse">
+              جاري تحميل المزيد...
+            </span>
+          </div>
+        )}
+        {filteredStores.length > 0 && (
+          <div className="text-center py-3">
+            <span className="text-xs text-marketplace-text-secondary">
+              عرض {Math.min(visibleCount, filteredStores.length)} من{" "}
+              {filteredStores.length}
+            </span>
+          </div>
+        )}
         {filteredStores.length === 0 && (
           <div className="p-20 text-center">
             <div className="w-16 h-16 bg-marketplace-bg rounded-2xl flex items-center justify-center mx-auto mb-4 border border-marketplace-border text-marketplace-text-secondary opacity-20">
@@ -325,7 +360,7 @@ function StoreRow({
     owners?.find((owner: any) => owner.id === store.ownerId)?.full_name ||
     "—";
   const revenue = sub.revenue
-    ? `${parseInt(sub.revenue).toLocaleString()} د.ع`
+    ? `${parseInt(sub.revenue).toLocaleString("en-US")} د.ع`
     : "0 د.ع";
   const productsCount = sub.products ?? 0;
 
@@ -383,7 +418,7 @@ function StoreRow({
 
       <td className="px-8 py-5">
         <span
-          className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase border ${store.isActive ? "bg-green-500/5 border-green-500/20 text-green-600" : "bg-yellow-500/5 border-yellow-500/20 text-yellow-600"}`}
+          className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase border ${store.isActive ? "bg-green-500/5 border-green-500/20 text-green-600 dark:text-green-400" : "bg-yellow-500/5 border-yellow-500/20 text-yellow-600 dark:text-yellow-400"}`}
         >
           {store.isActive ? "نشط" : "معطل"}
         </span>

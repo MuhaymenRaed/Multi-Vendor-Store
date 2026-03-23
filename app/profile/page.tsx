@@ -220,7 +220,7 @@ export default function ProfilePage() {
     >
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-0 right-0 w-1/2 h-1/2 bg-marketplace-accent/10 blur-[120px] rounded-full" />
-        <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-blue-500/10 blur-[120px] rounded-full" />
+        <div className="absolute bottom-0 left-0 w-1/3 h-1/3 bg-marketplace-accent-dark/10 blur-[120px] rounded-full" />
       </div>
 
       <div className="max-w-4xl w-full mx-auto relative z-10">
@@ -229,7 +229,7 @@ export default function ProfilePage() {
           animate={{ opacity: 1, y: 0 }}
           className="bg-marketplace-card/80 backdrop-blur-2xl border border-border/50 rounded-[2.5rem] overflow-hidden shadow-2xl"
         >
-          <div className="h-40 bg-gradient-to-br from-marketplace-accent to-[#005f6b] relative">
+          <div className="h-40 bg-linear-to-br from-marketplace-accent to-marketplace-accent-dark relative">
             <div className="absolute top-4 left-4 right-4 flex justify-between">
               <button
                 onClick={handleLogout}
@@ -309,7 +309,7 @@ export default function ProfilePage() {
                       setIsEditing(false))
                     : setIsEditing(true)
                 }
-                className={`px-6 py-2.5 cursor-pointer rounded-full border font-bold flex items-center gap-2 transition-all ${isEditing ? "text-red-500 border-red-200 bg-red-50" : "text-primary border-border bg-marketplace-bg"}`}
+                className={`px-6 py-2.5 cursor-pointer rounded-full border font-bold flex items-center gap-2 transition-all ${isEditing ? "text-red-500 border-red-500/30 bg-red-500/10" : "text-primary border-border bg-marketplace-bg"}`}
               >
                 {isEditing ? (
                   <>

@@ -31,7 +31,7 @@ export async function getDashboardData() {
   ] = await Promise.all([
     getDashboardStats(),
     getGrowthMetrics(),
-    getRecentUsers(),
+    getRecentUsers(1000),
     getTopStores(),
     getDetailedRevenueData(),
     getAdminProducts(),
@@ -44,28 +44,28 @@ export async function getDashboardData() {
   const statsData = [
     {
       label: "إجمالي المستخدمين",
-      value: stats.usersCount.toLocaleString("ar-EG"),
+      value: stats.usersCount.toLocaleString("en-US"),
       icon: "Users",
       change: `${growth.userGrowth >= 0 ? "+" : ""}${growth.userGrowth}%`,
       trend: growth.userGrowth >= 0 ? "up" : "down",
     },
     {
       label: "المتاجر النشطة",
-      value: stats.storesCount.toLocaleString("ar-EG"),
+      value: stats.storesCount.toLocaleString("en-US"),
       icon: "Store",
       change: `${growth.storeGrowth >= 0 ? "+" : ""}${growth.storeGrowth}%`,
       trend: growth.storeGrowth >= 0 ? "up" : "down",
     },
     {
       label: "المنتجات",
-      value: stats.productsCount.toLocaleString("ar-EG"),
+      value: stats.productsCount.toLocaleString("en-US"),
       icon: "Package",
       change: `${growth.productGrowth >= 0 ? "+" : ""}${growth.productGrowth}%`,
       trend: growth.productGrowth >= 0 ? "up" : "down",
     },
     {
       label: "الإيرادات المحققة",
-      value: `${stats.totalRevenue.toLocaleString("ar-IQ")} د.ع`,
+      value: `${stats.totalRevenue.toLocaleString("en-US")} د.ع`,
       icon: "DollarSign",
       change: `${growth.revGrowth >= 0 ? "+" : ""}${growth.revGrowth}%`,
       trend: growth.revGrowth >= 0 ? "up" : "down",

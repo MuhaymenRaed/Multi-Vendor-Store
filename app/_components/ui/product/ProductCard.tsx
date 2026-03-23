@@ -30,7 +30,7 @@ export function ProductCard({ product, isOwner = false }: ProductCardProps) {
     <motion.div
       dir="rtl"
       whileHover={isOutOfStock ? {} : { y: -6 }}
-      className={`relative bg-marketplace-card/50 backdrop-blur-sm rounded-3xl overflow-hidden border transition-all duration-300 shadow-md
+      className={`relative h-full flex flex-col bg-marketplace-card/50 backdrop-blur-sm rounded-3xl overflow-hidden border transition-all duration-300 shadow-md
         ${
           isOutOfStock
             ? "border-border/20 opacity-60 grayscale cursor-not-allowed"
@@ -121,7 +121,7 @@ export function ProductCard({ product, isOwner = false }: ProductCardProps) {
       </div>
 
       {/* ── Details ── */}
-      <div className="p-5 text-right">
+      <div className="p-5 text-right flex flex-col flex-1">
         <h4
           className={`font-bold text-marketplace-text-primary text-lg mb-1 line-clamp-1 transition-colors ${
             isOutOfStock
@@ -139,7 +139,7 @@ export function ProductCard({ product, isOwner = false }: ProductCardProps) {
           {product.category}
         </p>
 
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mt-auto pt-2">
           <div className="flex items-baseline gap-1">
             <span
               className={`text-2xl font-black ${
@@ -152,7 +152,7 @@ export function ProductCard({ product, isOwner = false }: ProductCardProps) {
                       : "text-marketplace-accent"
               }`}
             >
-              {product.price.toLocaleString()}
+              {product.price.toLocaleString("en-US")}
             </span>
             <span
               className={`text-xs font-bold opacity-80 ${
@@ -165,7 +165,7 @@ export function ProductCard({ product, isOwner = false }: ProductCardProps) {
                       : "text-marketplace-accent"
               }`}
             >
-              د.إ
+              د.ع
             </span>
           </div>
 
@@ -179,12 +179,12 @@ export function ProductCard({ product, isOwner = false }: ProductCardProps) {
 
       {/* Last unit bottom bar */}
       {isLastUnit && (
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-rose-400/80 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r from-transparent via-rose-400/80 to-transparent" />
       )}
 
       {/* Low stock bottom bar */}
       {isLowStock && !isOutOfStock && (
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-amber-400/60 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-linear-to-r from-transparent via-amber-400/60 to-transparent" />
       )}
     </motion.div>
   );

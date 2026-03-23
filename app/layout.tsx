@@ -1,5 +1,6 @@
 import { Toaster } from "react-hot-toast";
 import { ThemeProvider } from "./_lib/theme-provider";
+import { NavigationProgress } from "./_components/NavigationProgress";
 import "./styles/globals.css";
 import type { Metadata, Viewport } from "next";
 export const metadata: Metadata = {
@@ -201,16 +202,27 @@ export default function RootLayout({
 
       <body>
         <Toaster
-          position="top-center" // You can also use "top-right" or "top-left"
+          position="top-center"
           toastOptions={{
             duration: 4000,
             style: {
-              background: "var(--card)",
-              color: "var(--card-foreground)",
-              border: "1px solid var(--border)",
+              background: "var(--marketplace-card-bg)",
+              color: "var(--marketplace-text-primary)",
+              border: "2px solid var(--border)",
               fontSize: "14px",
-              borderRadius: "var(--radius)", // Maps exactly to your 0.75rem (12px)
+              borderRadius: "var(--radius)",
               padding: "12px 20px",
+              boxShadow: "none",
+            },
+            success: {
+              style: {
+                borderColor: "var(--marketplace-accent)",
+              },
+            },
+            error: {
+              style: {
+                borderColor: "var(--danger)",
+              },
             },
           }}
         />
@@ -220,6 +232,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <NavigationProgress />
           {children}
         </ThemeProvider>
       </body>

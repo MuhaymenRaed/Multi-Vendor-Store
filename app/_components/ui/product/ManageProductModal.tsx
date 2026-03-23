@@ -130,6 +130,10 @@ export function ManageProductModal({
       toast.error("يرجى إدخال قيم موجبة للسعر والمخزون");
       return;
     }
+    if (form.stock_quantity && !Number.isInteger(Number(form.stock_quantity))) {
+      toast.error("الكمية يجب أن تكون عدداً صحيحاً بدون فواصل عشرية");
+      return;
+    }
     setIsLoading(true);
     try {
       let finalImageUrl: string | null = form.image_url;
@@ -181,7 +185,7 @@ export function ManageProductModal({
           dir="rtl"
         >
           {/* Header */}
-          <div className="px-8 py-6 border-b border-marketplace-border flex items-center justify-between bg-gradient-to-l from-marketplace-accent/5 to-transparent">
+          <div className="px-8 py-6 border-b border-marketplace-border flex items-center justify-between bg-linear-to-l from-marketplace-accent/5 to-transparent">
             <h2 className="text-xl font-black text-marketplace-text-primary flex items-center gap-3">
               <div className="p-2 bg-marketplace-accent/20 rounded-xl text-marketplace-accent">
                 <Package size={20} />
@@ -283,7 +287,7 @@ export function ManageProductModal({
               {/* Price */}
               <div className="space-y-2">
                 <label className="text-[11px] font-bold text-marketplace-text-secondary uppercase">
-                  السعر (د.إ)
+                  السعر (د.ع)
                 </label>
                 <div className="relative group">
                   <DollarSign
@@ -316,11 +320,22 @@ export function ManageProductModal({
                   <input
                     type="number"
                     min="0"
+                    step="1"
                     placeholder="0"
                     value={form.stock_quantity}
-                    onChange={(e) =>
-                      setForm({ ...form, stock_quantity: e.target.value })
-                    }
+                    onKeyDown={(e) => {
+                      if (e.key === "." || e.key === ",") e.preventDefault();
+                    }}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val && !Number.isInteger(Number(val))) {
+                        toast.error(
+                          "الكمية يجب أن تكون عدداً صحيحاً بدون فواصل عشرية",
+                        );
+                        return;
+                      }
+                      setForm({ ...form, stock_quantity: val });
+                    }}
                     className="w-full bg-marketplace-bg border border-marketplace-border rounded-2xl py-3.5 pr-11 pl-4 text-marketplace-text-primary font-bold outline-none focus:border-marketplace-accent/50 transition-all"
                   />
                 </div>

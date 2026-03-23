@@ -44,13 +44,13 @@ export async function updateProduct(
 }
 
 /**
- * Delete a product by ID.
+ * Soft-delete a product by ID.
  * Throws if the operation fails.
  */
 export async function deleteProduct(productId: string) {
   const { error } = await supabase
     .from("products")
-    .delete()
+    .update({ is_deleted: true })
     .eq("id", productId);
 
   if (error) throw new Error(error.message);

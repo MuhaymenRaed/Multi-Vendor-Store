@@ -251,7 +251,7 @@ export function RevenueTab({
               >
                 {card.label.includes("العمليات")
                   ? card.value
-                  : `${card.value.toLocaleString("ar-IQ")} د.ع`}
+                  : `${card.value.toLocaleString("en-US")} د.ع`}
               </h3>
               <p className={`text-[11px] font-bold ${card.color}`}>
                 {card.sub}
@@ -300,7 +300,7 @@ export function RevenueTab({
                 <CartesianGrid
                   strokeDasharray="3 3"
                   vertical={false}
-                  stroke="rgba(255,255,255,0.05)"
+                  stroke="rgba(128,128,128,0.15)"
                 />
                 <XAxis
                   dataKey="shortDate"
@@ -322,14 +322,14 @@ export function RevenueTab({
                     payload[0]?.payload.displayTime || label
                   }
                   formatter={(value, name, props) => [
-                    `${Number(value).toLocaleString("ar-IQ")} د.ع`,
+                    `${Number(value).toLocaleString("en-US")} د.ع`,
                     name === "price" ? "قيمة المنتج" : "ربح الإدارة",
                   ]}
                   contentStyle={{
-                    backgroundColor: "rgba(20, 20, 20, 0.85)",
+                    backgroundColor: "var(--marketplace-card-bg)",
                     backdropFilter: "blur(10px)",
                     borderRadius: "16px",
-                    border: "1px solid rgba(255,255,255,0.1)",
+                    border: "1px solid var(--border)",
                     textAlign: "right",
                     direction: "rtl",
                   }}
@@ -398,10 +398,10 @@ export function RevenueTab({
                     <td className="px-6 py-4">
                       <div className="flex flex-col" dir="ltr">
                         <span className="text-sm font-black text-marketplace-accent">
-                          {row.price.toLocaleString()} د.ع
+                          {row.price.toLocaleString("en-US")} د.ع
                         </span>
                         <span className="text-[10px] text-green-500 font-bold mt-1">
-                          +{row.profit.toLocaleString()} د.ع عمولة
+                          +{row.profit.toLocaleString("en-US")} د.ع عمولة
                         </span>
                       </div>
                     </td>

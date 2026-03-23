@@ -6,7 +6,13 @@ export async function GET(request: Request) {
   const orderId = searchParams.get("id");
   const type = searchParams.get("type")?.toLowerCase(); // Standardize to lowercase
 
-  if (!orderId) {
+  // Validate orderId exists and is a valid UUID
+  if (
+    !orderId ||
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      orderId,
+    )
+  ) {
     return NextResponse.redirect(
       new URL("/confirm-order?status=error", request.url),
     );

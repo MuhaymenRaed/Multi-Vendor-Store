@@ -84,6 +84,7 @@ export async function adminToggleStoreActive(
     .from("stores")
     .update({ is_active: isActive })
     .eq("id", storeId)
+    .eq("is_deleted", false)
     .select()
     .single();
   if (error) throw new Error(error.message);
@@ -116,6 +117,7 @@ export async function updateStore(storeId: string, updates: any) {
       is_active: updates.is_active,
     })
     .eq("id", storeId)
+    .eq("is_deleted", false)
     .select()
     .single();
   if (error) throw new Error(error.message);
@@ -330,6 +332,7 @@ export async function getAdminStores() {
   const { data, error } = await supabase
     .from("stores")
     .select("*")
+    .eq("is_deleted", false)
     .order("created_at", { ascending: false });
 
   if (error) throw error;

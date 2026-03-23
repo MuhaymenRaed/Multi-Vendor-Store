@@ -169,7 +169,7 @@ export default function StoreClientWrapper({
             className="w-full h-full object-cover blur-[80px] saturate-150"
             alt=""
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-marketplace-bg/60 to-marketplace-bg" />
+          <div className="absolute inset-0 bg-linear-to-b from-transparent via-marketplace-bg/60 to-marketplace-bg" />
         </div>
 
         <div className="relative z-10 flex flex-col items-center text-center px-4">
@@ -292,13 +292,19 @@ export default function StoreClientWrapper({
             )}
             <button
               onClick={copyUrl}
-              className="p-3 cursor-pointer rounded-xl bg-marketplace-card/50 border border-marketplace-border backdrop-blur-md hover:bg-marketplace-card-hover transition-all"
+              className="relative group flex items-center gap-2 cursor-pointer p-3 rounded-xl bg-marketplace-card/50 border border-marketplace-border backdrop-blur-md hover:bg-marketplace-card-hover transition-all"
             >
               {copied ? (
                 <Check size={20} className="text-marketplace-accent" />
               ) : (
                 <Share2 size={20} />
               )}
+              <span className="text-xs font-bold md:hidden">
+                {copied ? "تم النسخ" : "مشاركة"}
+              </span>
+              <span className="absolute -bottom-10 left-1/2 -translate-x-1/2 hidden md:group-hover:block whitespace-nowrap bg-marketplace-card border border-marketplace-border text-marketplace-text-primary text-xs font-bold px-3 py-1.5 rounded-lg shadow-lg">
+                {copied ? "تم نسخ الرابط!" : "نسخ رابط المتجر"}
+              </span>
             </button>
           </div>
         </div>
@@ -321,7 +327,10 @@ export default function StoreClientWrapper({
                   className="w-full bg-marketplace-bg/50 p-4 rounded-xl border border-marketplace-border outline-none text-marketplace-text-primary h-24 resize-none"
                 />
               ) : (
-                <p className="text-marketplace-text-secondary text-lg leading-relaxed font-medium">
+                <p
+                  dir="auto"
+                  className="text-marketplace-text-secondary text-lg leading-relaxed font-medium break-words"
+                >
                   {store.description || "أهلاً بكم في متجرنا المتميز."}
                 </p>
               )}
@@ -432,7 +441,7 @@ export default function StoreClientWrapper({
                   >
                     {/* Owner/admin action overlay (z-30 to stay clickable above out-of-stock overlay) */}
                     {canEdit && (
-                      <div className="absolute top-3 left-3 z-30 flex gap-2 opacity-100 md:opacity-0 md:group-hover/card:opacity-100 transition-all duration-200">
+                      <div className="absolute top-3 left-3 z-30 flex gap-2 transition-all duration-200">
                         {/* Edit */}
                         <button
                           onClick={(e) => {
@@ -549,6 +558,7 @@ export default function StoreClientWrapper({
         isOpen={!!selectedProduct}
         onClose={() => setSelectedProduct(null)}
         dealer_phone={dealerPhone}
+        store_name={store.name}
       />
 
       {/* Add product (owner) */}

@@ -18,7 +18,7 @@ import {
   Tag,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
 import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal";
 import { ProductModal } from "../components/ProductModal";
@@ -44,6 +44,26 @@ export function ProductsTab({ data: initialData }: { data: any[] }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const router = useRouter();
+
+  const ITEMS_PER_PAGE = 20;
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const sentinelRef = useCallback((node: HTMLDivElement | null) => {
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => prev + ITEMS_PER_PAGE);
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    setVisibleCount(ITEMS_PER_PAGE);
+  }, [searchQuery, activeFilter, activeStoreFilter]);
 
   // Keep local state in sync with server state (Real-time update fix)
   useEffect(() => {
@@ -285,7 +305,7 @@ export function ProductsTab({ data: initialData }: { data: any[] }) {
               </tr>
             </thead>
             <tbody className="divide-y divide-marketplace-border/50">
-              {filteredProducts.map((product) => (
+              {filteredProducts.slice(0, visibleCount).map((product) => (
                 <ProductRow
                   key={product.id}
                   product={product}
@@ -296,6 +316,21 @@ export function ProductsTab({ data: initialData }: { data: any[] }) {
             </tbody>
           </table>
         </div>
+        {visibleCount < filteredProducts.length && (
+          <div ref={sentinelRef} className="flex justify-center py-6">
+            <span className="text-xs text-marketplace-text-secondary font-bold animate-pulse">
+              جاري تحميل المزيد...
+            </span>
+          </div>
+        )}
+        {filteredProducts.length > 0 && (
+          <div className="text-center py-3">
+            <span className="text-xs text-marketplace-text-secondary">
+              عرض {Math.min(visibleCount, filteredProducts.length)} من{" "}
+              {filteredProducts.length}
+            </span>
+          </div>
+        )}
         {filteredProducts.length === 0 && (
           <div className="p-20 text-center">
             <Package
@@ -342,7 +377,7 @@ function ProductRow({
   const category = product.category || product.categories?.name || "—";
   const stock = product.stock ?? product.stock_quantity ?? 0;
   const priceDisplay = product.price
-    ? `${Number(product.price).toLocaleString()} د.ع`
+    ? `${Number(product.price).toLocaleString("en-US")} د.ع`
     : product.price || "—";
   const statusLabel = product.status
     ? product.status

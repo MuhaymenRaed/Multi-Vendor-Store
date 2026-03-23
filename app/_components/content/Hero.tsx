@@ -35,7 +35,7 @@ export function Hero() {
     >
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-marketplace-accent/10 dark:bg-marketplace-accent/20 blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-[#0097a7]/10 dark:bg-[#0097a7]/20 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-marketplace-accent-dark/10 dark:bg-marketplace-accent-dark/20 blur-[120px] rounded-full" />
         <div
           className="absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
           style={{
@@ -52,7 +52,7 @@ export function Hero() {
         >
           <h1 className="text-5xl md:text-7xl font-black mb-8 text-marketplace-text-primary tracking-tight leading-[1.15]">
             اكتشف عالم المتاجر <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-marketplace-accent to-[#0097a7]">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-marketplace-accent to-marketplace-accent-dark">
               بلمسة واحدة
             </span>
           </h1>

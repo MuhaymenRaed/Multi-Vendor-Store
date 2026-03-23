@@ -84,7 +84,7 @@ export default function NotFound() {
         {/* Decorative Progress Dots */}
         <div className="mt-16 flex justify-center items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-marketplace-accent/20" />
-          <div className="w-20 h-1.5 rounded-full bg-gradient-to-l from-marketplace-accent to-transparent" />
+          <div className="w-20 h-1.5 rounded-full bg-linear-to-l from-marketplace-accent to-transparent" />
           <div className="w-2 h-2 rounded-full bg-marketplace-accent/20" />
         </div>
       </div>

@@ -44,7 +44,7 @@ export function StatCard({ stat, index }: StatCardProps) {
           )}
           {changeValue && (
             <div
-              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black ${isUp ? "bg-green-500/10 text-green-600" : "bg-red-500/10 text-red-600"}`}
+              className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black ${isUp ? "bg-green-500/10 text-green-600 dark:text-green-400" : "bg-red-500/10 text-red-600 dark:text-red-400"}`}
             >
               {isUp ? <TrendingUp size={11} /> : <TrendingDown size={11} />}
               {changeValue}
@@ -56,7 +56,7 @@ export function StatCard({ stat, index }: StatCardProps) {
         </p>
         <h3 className="text-3xl font-black text-marketplace-text-primary tracking-tight">
           {typeof stat.value === "number"
-            ? stat.value.toLocaleString("ar-SA")
+            ? stat.value.toLocaleString("en-US")
             : stat.value}
         </h3>
       </div>
