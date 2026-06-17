@@ -9,6 +9,7 @@ import { supabase } from "@/app/_lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import { createOrderLead } from "@/app/_lib/data-services/order-service";
 import { getProfile } from "@/app/_lib/data-services/profile-service";
+import type { ProductPricing } from "@/app/_lib/utils/discount-pricing";
 import toast from "react-hot-toast";
 import { ConfirmPurchaseModal } from "./ConfirmPurchaseModal";
 
@@ -24,6 +25,7 @@ interface ProductModalProps {
     store_id: string;
     admin_commission?: number;
   } | null;
+  pricing?: ProductPricing | null;
   dealer_phone?: string;
   store_name?: string;
   isOpen: boolean;
@@ -32,10 +34,10 @@ interface ProductModalProps {
 
 export function ProductModal({
   product,
+  pricing,
   isOpen,
   onClose,
   dealer_phone,
-  store_name,
 }: ProductModalProps) {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -59,6 +61,11 @@ export function ProductModal({
   const stock = product.stock_quantity ?? null;
   const isOutOfStock = stock !== null && stock === 0;
 
+  // Effective price after discounts — this is what the customer pays and what
+  // is recorded on the order (and therefore flows into revenue).
+  const hasDiscount = !!pricing?.hasDiscount;
+  const effectivePrice = pricing?.finalPrice ?? product.price;
+
   const images: string[] =
     product.image_url && Array.isArray(product.image_url)
       ? product.image_url
@@ -81,12 +88,18 @@ export function ProductModal({
         setLoading(false);
         return;
       }
+      if (!profile?.location) {
+        toast.error("يرجى إضافة موقعك لإتمام الطلب");
+        router.push("/profile");
+        setLoading(false);
+        return;
+      }
 
-      const orderEntry = await createOrderLead({
+      await createOrderLead({
         buyer_id: user.id,
         store_id: product.store_id,
         product_id: product.id,
-        product_price_at_click: product.price,
+        product_price_at_click: effectivePrice,
         admin_commission_at_click: product.admin_commission || 0,
       });
 
@@ -98,11 +111,12 @@ export function ProductModal({
         `══════════════════`,
         `*تفاصيل المنتج:*`,
         ` المنتج: ${product.name}`,
-        ` السعر: ${product.price.toLocaleString("en-US")} د.ع`,
+        ` السعر: ${effectivePrice.toLocaleString("en-US")} د.ع`,
         ` التصنيف: ${product.category || "غير محدد"}`,
         ``,
         `*بيانات الزبون:*`,
         ` الاسم: ${profile.full_name || "غير معروف"}`,
+        `الموقع: ${profile.location || "غير محدد"}`,
         ` الهاتف: ${profile.phone}`,
         ` التاريخ: ${formattedDate}`,
       ].join("\n");
@@ -218,9 +232,23 @@ export function ProductModal({
                     {product.name}
                   </h2>
 
-                  <div className="text-3xl md:text-4xl font-black mb-5 text-marketplace-accent flex items-baseline gap-2">
-                    {product.price.toLocaleString("en-US")}
-                    <span className="text-lg opacity-80 font-bold">د.ع</span>
+                  <div className="mb-5">
+                    {hasDiscount && (
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-lg font-bold text-marketplace-text-secondary/60 line-through">
+                          {product.price.toLocaleString("en-US")} د.ع
+                        </span>
+                        <span className="text-[11px] font-black bg-marketplace-accent text-white px-2 py-0.5 rounded-lg">
+                          {pricing!.appliedDiscount?.discount_type === "fixed_amount"
+                            ? `خصم ${pricing!.amountOff.toLocaleString("en-US")} د.ع`
+                            : `خصم ${pricing!.percentOff}%`}
+                        </span>
+                      </div>
+                    )}
+                    <div className="text-3xl md:text-4xl font-black text-marketplace-accent flex items-baseline gap-2">
+                      {effectivePrice.toLocaleString("en-US")}
+                      <span className="text-lg opacity-80 font-bold">د.ع</span>
+                    </div>
                   </div>
 
                   <p
@@ -262,6 +290,7 @@ export function ProductModal({
             onClose={() => setShowConfirm(false)}
             onConfirm={handleOrderProcess}
             product={product}
+            price={effectivePrice}
             loading={loading}
           />
 

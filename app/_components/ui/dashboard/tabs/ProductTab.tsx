@@ -17,8 +17,10 @@ import {
   Store,
   Tag,
 } from "lucide-react";
+import { SmartImage } from "@/app/_components/image/SmartImage";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useResponsivePageSize } from "@/app/_lib/hooks/useResponsivePageSize";
 import { toast } from "react-hot-toast";
 import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal";
 import { ProductModal } from "../components/ProductModal";
@@ -45,25 +47,28 @@ export function ProductsTab({ data: initialData }: { data: any[] }) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const router = useRouter();
 
-  const ITEMS_PER_PAGE = 20;
-  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
-  const sentinelRef = useCallback((node: HTMLDivElement | null) => {
-    if (!node) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setVisibleCount((prev) => prev + ITEMS_PER_PAGE);
-        }
-      },
-      { threshold: 0.1 },
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
+  const pageSize = useResponsivePageSize(20);
+  const [visibleCount, setVisibleCount] = useState(pageSize);
+  const sentinelRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (!node) return;
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            setVisibleCount((prev) => prev + pageSize);
+          }
+        },
+        { threshold: 0.1 },
+      );
+      observer.observe(node);
+      return () => observer.disconnect();
+    },
+    [pageSize],
+  );
 
   useEffect(() => {
-    setVisibleCount(ITEMS_PER_PAGE);
-  }, [searchQuery, activeFilter, activeStoreFilter]);
+    setVisibleCount(pageSize);
+  }, [pageSize, searchQuery, activeFilter, activeStoreFilter]);
 
   // Keep local state in sync with server state (Real-time update fix)
   useEffect(() => {
@@ -395,12 +400,17 @@ function ProductRow({
     >
       <td className="px-8 py-5">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-marketplace-bg border border-marketplace-border flex items-center justify-center text-marketplace-text-secondary group-hover:text-marketplace-accent transition-colors">
+          <div className="relative w-12 h-12 rounded-2xl bg-marketplace-bg border border-marketplace-border flex items-center justify-center text-marketplace-text-secondary group-hover:text-marketplace-accent transition-colors overflow-hidden">
             {product.image_url ? (
-              <img
-                src={product.image_url}
+              <SmartImage
+                src={
+                  Array.isArray(product.image_url)
+                    ? product.image_url[0]
+                    : product.image_url
+                }
                 alt={product.name}
-                className="w-full h-full object-cover rounded-2xl"
+                fill
+                className="object-cover"
               />
             ) : (
               <Package size={20} />

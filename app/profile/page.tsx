@@ -14,6 +14,7 @@ import {
   Edit3,
   X,
   Home,
+  MapPin,
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useRouter } from "next/navigation";
@@ -29,6 +30,7 @@ import {
 import { signOut } from "@/app/_lib/data-services/auth-service";
 import { loadHeic2any } from "@/app/_components/image/loadHeic2any";
 import { resizeImageForStorage } from "@/app/_components/image/resizeImageForStorage";
+import { SmartImage } from "@/app/_components/image/SmartImage";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -44,13 +46,13 @@ export default function ProfilePage() {
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [formData, setFormData] = useState({
     full_name: "",
-    username: "",
+    location: "",
     phone: "",
     avatar_url: "",
   });
   const [originalData, setOriginalData] = useState({
     full_name: "",
-    username: "",
+    location: "",
     phone: "",
     avatar_url: "",
   });
@@ -75,7 +77,7 @@ export default function ProfilePage() {
         const profile = await getProfile(user.id);
         const initial = {
           full_name: profile?.full_name || user.user_metadata?.full_name || "",
-          username: profile?.username || "",
+          location: profile?.location || "",
           phone: stripCountryCode(profile?.phone || ""),
           avatar_url: profile?.avatar_url || "",
         };
@@ -256,9 +258,10 @@ export default function ProfilePage() {
                   className={`w-36 h-36 rounded-full border-4 border-marketplace-bg bg-marketplace-card overflow-hidden shadow-xl relative ${isEditing ? "ring-4 ring-marketplace-accent/30" : ""}`}
                 >
                   {previewUrl ? (
-                    <img
+                    <SmartImage
                       src={previewUrl}
                       alt="Avatar"
+                      fill
                       className="w-full h-full object-cover"
                     />
                   ) : (
@@ -337,9 +340,9 @@ export default function ProfilePage() {
                   type: "text",
                 },
                 {
-                  label: "اسم المستخدم",
-                  key: "username",
-                  icon: () => "",
+                  label: "الموقع",
+                  key: "location",
+                  icon: MapPin,
                   type: "text",
                 },
                 { label: "رقم الهاتف", key: "phone", icon: Phone, type: "tel" },

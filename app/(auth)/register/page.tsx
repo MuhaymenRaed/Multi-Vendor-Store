@@ -10,6 +10,8 @@ import {
   Loader2,
   CheckCircle2,
   ArrowLeft,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { signUp } from "@/app/_lib/data-services/auth-service";
 import { LogoIcon } from "@/app/_components/reuseable/LogoIcon";
@@ -26,6 +28,7 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // RegisterPage.tsx (الجزء الخاص بـ handleSubmit)
 
@@ -155,16 +158,24 @@ export default function RegisterPage() {
           <div className="relative">
             <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <input
-              type="password"
+              type={showPassword ? "text" : "password"}
               required
               minLength={6}
               value={formData.password}
               onChange={(e) =>
                 setFormData({ ...formData, password: e.target.value })
               }
-              className="w-full bg-marketplace-bg border border-border rounded-xl py-3 pr-11 pl-4 outline-none focus:ring-2 focus:ring-marketplace-accent/50 transition-all text-marketplace-text-primary"
+              className="w-full bg-marketplace-bg border border-border rounded-xl py-3 pr-11 pl-10 outline-none focus:ring-2 focus:ring-marketplace-accent/50 transition-all text-marketplace-text-primary"
               placeholder="••••••••"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-marketplace-text-primary transition-colors cursor-pointer"
+              tabIndex={-1}
+            >
+              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            </button>
           </div>
         </div>
 

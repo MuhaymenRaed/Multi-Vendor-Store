@@ -2,6 +2,7 @@
 
 import { loadHeic2any } from "@/app/_components/image/loadHeic2any";
 import { resizeImageForStorage } from "@/app/_components/image/resizeImageForStorage";
+import { SmartImage } from "@/app/_components/image/SmartImage";
 import { ImagePlus, Loader2, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { toast } from "react-hot-toast";
@@ -127,7 +128,7 @@ export function ImageUploadGrid({
             key={url}
             className="relative aspect-square rounded-2xl overflow-hidden border border-marketplace-border group/thumb bg-marketplace-bg"
           >
-            <img
+            <SmartImage
               src={url}
               alt="صورة محفوظة"
               className="w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-105"
@@ -164,7 +165,7 @@ export function ImageUploadGrid({
             key={img.id}
             className="relative aspect-square rounded-2xl overflow-hidden border border-marketplace-accent/40 group/thumb bg-marketplace-bg"
           >
-            <img
+            <SmartImage
               src={img.previewUrl}
               alt="معاينة"
               className="w-full h-full object-cover transition-transform duration-300 group-hover/thumb:scale-105"

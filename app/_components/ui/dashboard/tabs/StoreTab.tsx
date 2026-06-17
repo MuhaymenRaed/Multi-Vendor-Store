@@ -1,14 +1,8 @@
 "use client";
 
-import {
-  adminDeleteStore,
-  getAdminStores,
-  adminToggleStoreActive,
-  getAvailableOwners,
-} from "@/app/_lib/data-services/admin-service";
-import { supabase } from "@/app/_lib/supabase/client";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  AlertTriangle,
   Check,
   Filter,
   Package,
@@ -18,11 +12,19 @@ import {
   TrendingUp,
   User,
 } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal";
 import { StoreModal } from "../components/StoreModal";
 import { TableActions, buildStoreActions } from "../components/TableActions";
-// import { getAdminStores } from "@/app/_lib/data-services/dashboard-service";
+import { SmartImage } from "@/app/_components/image/SmartImage";
+import {
+  getAvailableOwners,
+  getAdminStores,
+  adminToggleStoreActive,
+  adminDeleteStore,
+} from "@/app/_lib/data-services/admin-service";
+import { supabase } from "@/app/_lib/supabase/client";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useResponsivePageSize } from "@/app/_lib/hooks/useResponsivePageSize";
 import { toast } from "react-hot-toast";
 
 export function StoresTab({
@@ -44,6 +46,7 @@ export function StoresTab({
   const [selectedStore, setSelectedStore] = useState<any>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [owners, setOwners] = useState<any[]>([]);
+
   async function fetchOwners() {
     try {
       const data = await getAvailableOwners();
@@ -52,6 +55,7 @@ export function StoresTab({
       console.error("Failed to fetch owners:", error);
     }
   }
+
   useEffect(() => {
     fetchOwners();
   }, []);
@@ -69,6 +73,29 @@ export function StoresTab({
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
+  const pageSize = useResponsivePageSize(20);
+  const [visibleCount, setVisibleCount] = useState(pageSize);
+  const sentinelRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (!node) return;
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            setVisibleCount((prev) => prev + pageSize);
+          }
+        },
+        { threshold: 0.1 },
+      );
+      observer.observe(node);
+      return () => observer.disconnect();
+    },
+    [pageSize],
+  );
+
+  useEffect(() => {
+    setVisibleCount(pageSize);
+  }, [pageSize, searchQuery, activeFilter]);
+
   useEffect(() => {
     const channel = supabase
       .channel("admin-stores-realtime")
@@ -85,26 +112,6 @@ export function StoresTab({
       void supabase.removeChannel(channel);
     };
   }, []);
-
-  const ITEMS_PER_PAGE = 20;
-  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
-  const sentinelRef = useCallback((node: HTMLDivElement | null) => {
-    if (!node) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setVisibleCount((prev) => prev + ITEMS_PER_PAGE);
-        }
-      },
-      { threshold: 0.1 },
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    setVisibleCount(ITEMS_PER_PAGE);
-  }, [searchQuery, activeFilter]);
 
   const statuses = ["الكل", "نشط", "معطل"];
   const filteredStores = data.filter((store) => {
@@ -369,11 +376,14 @@ function StoreRow({
       <td className="px-8 py-5">
         <div className="flex items-center gap-4">
           {store.logoUrl ? (
-            <img
-              src={store.logoUrl}
-              alt={store.name}
-              className="w-12 h-12 rounded-2xl object-cover border border-marketplace-border"
-            />
+            <div className="relative w-12 h-12 rounded-2xl overflow-hidden border border-marketplace-border">
+              <SmartImage
+                src={store.logoUrl}
+                alt={store.name}
+                fill
+                className="object-cover"
+              />
+            </div>
           ) : (
             <div className="w-12 h-12 rounded-2xl bg-marketplace-accent/10 border border-marketplace-accent/20 flex items-center justify-center text-marketplace-accent">
               <Store size={22} />

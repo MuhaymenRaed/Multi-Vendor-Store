@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { SmartImage } from "@/app/_components/image/SmartImage";
 import { useCallback, useState, useEffect } from "react";
 
 interface ImageSliderProps {
@@ -73,9 +74,10 @@ export function ImageSlider({
 
   if (image_url.length === 1) {
     return (
-      <img
+      <SmartImage
         src={image_url[0]}
         alt={alt}
+        fill
         className={`w-full h-full ${objectFit === "cover" ? "object-cover" : "object-contain p-4"} ${className}`}
       />
     );
@@ -87,15 +89,21 @@ export function ImageSlider({
     >
       {/* ── Preloaded Image Stack ── */}
       {image_url.map((url, index) => (
-        <img
+        <div
           key={url}
-          src={url}
-          alt={`${alt} — صورة ${index + 1} من ${image_url.length}`}
-          draggable={false}
-          className={`absolute inset-0 w-full h-full transition-opacity duration-300 ease-in-out select-none ${
-            objectFit === "cover" ? "object-cover" : "object-contain p-4"
-          } ${index === current ? "opacity-100 z-0" : "opacity-0 -z-10"}`}
-        />
+          className={`absolute inset-0 transition-opacity duration-300 ease-in-out select-none ${
+            index === current ? "opacity-100 z-0" : "opacity-0 -z-10"
+          }`}
+        >
+          <SmartImage
+            src={url}
+            alt={`${alt} — صورة ${index + 1} من ${image_url.length}`}
+            fill
+            className={`w-full h-full ${
+              objectFit === "cover" ? "object-cover" : "object-contain p-4"
+            }`}
+          />
+        </div>
       ))}
 
       {/* ── Prev arrow ── */}

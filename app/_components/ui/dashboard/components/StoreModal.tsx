@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
+import { SmartImage } from "@/app/_components/image/SmartImage";
 
 // دالة معالجة الصورة: تغيير الحجم، الضغط، والتحويل إلى WebP
 const processImage = async (file: File): Promise<File> => {
@@ -265,9 +266,10 @@ export function StoreModal({
                   />
                   {previewUrl ? (
                     <>
-                      <img
+                      <SmartImage
                         src={previewUrl}
                         alt="Logo"
+                        fill
                         className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
                       />
                       <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-2 backdrop-blur-[2px]">

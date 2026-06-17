@@ -9,6 +9,7 @@ const tabTitles: Record<TabType, string> = {
   users: "إدارة المستخدمين",
   stores: "إدارة المتاجر",
   products: "إدارة المنتجات",
+  discounts: "إدارة الخصومات",
   revenue: "تحليلات الإيرادات",
   requests: "الطلبات",
 };

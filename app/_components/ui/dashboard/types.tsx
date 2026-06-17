@@ -3,6 +3,7 @@ export type TabType =
   | "users"
   | "stores"
   | "products"
+  | "discounts"
   | "revenue"
   | "requests";
 

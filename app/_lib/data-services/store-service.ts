@@ -64,6 +64,40 @@ export async function getStores(
     return prioritizeCurrentUserStore(sortedByPopularity);
   }
 
+  if (sortBy === "most-products") {
+    const storeIds = stores.map((s) => s.id);
+
+    const { data: products, error: productsError } = await supabase
+      .from("products")
+      .select("store_id")
+      .in("store_id", storeIds)
+      .eq("is_deleted", false);
+
+    if (productsError) throw new Error(productsError.message);
+
+    const productCountByStoreId = (products || []).reduce(
+      (acc: Record<string, number>, product: any) => {
+        const key = product.store_id;
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      },
+      {},
+    );
+
+    const sortedByProducts = [...stores].sort((a, b) => {
+      const aCount = productCountByStoreId[a.id] || 0;
+      const bCount = productCountByStoreId[b.id] || 0;
+
+      // Higher product count first, then newest as tiebreaker
+      if (bCount !== aCount) return bCount - aCount;
+      return (
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+    });
+
+    return prioritizeCurrentUserStore(sortedByProducts);
+  }
+
   return prioritizeCurrentUserStore(stores);
 }
 

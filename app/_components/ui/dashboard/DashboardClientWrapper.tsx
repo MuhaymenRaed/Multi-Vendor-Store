@@ -4,6 +4,7 @@ import { DashboardHeader } from "@/app/_components/ui/dashboard/components/Dashb
 import { Sidebar } from "@/app/_components/ui/dashboard/components/SideBar";
 import { OverviewTab } from "@/app/_components/ui/dashboard/tabs/OverviewTab";
 import { ProductsTab } from "@/app/_components/ui/dashboard/tabs/ProductTab";
+import { DiscountsTab } from "@/app/_components/ui/dashboard/tabs/DiscountsTab";
 import { RequestsTab } from "@/app/_components/ui/dashboard/tabs/RequestsTab"; // New Tab Component
 import { RevenueTab } from "@/app/_components/ui/dashboard/tabs/RevenueTab";
 import { StoresTab } from "@/app/_components/ui/dashboard/tabs/StoreTab";
@@ -103,6 +104,7 @@ export default function DashboardClientWrapper({
               {activeTab === "products" && (
                 <ProductsTab data={initialData.productsData} />
               )}
+              {activeTab === "discounts" && <DiscountsTab />}
               {activeTab === "requests" && <RequestsTab />}
               {activeTab === "revenue" && (
                 <RevenueTab revenueData={initialData.revenueData} />

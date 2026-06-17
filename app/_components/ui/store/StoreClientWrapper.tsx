@@ -11,6 +11,7 @@ import { uploadStoreLogo } from "@/app/_lib/data-services/admin-service";
 import { updateStoreData } from "@/app/_lib/data-services/store-service";
 import { supabase } from "@/app/_lib/supabase/client";
 import { AnimatePresence, motion } from "framer-motion";
+import { SmartImage } from "@/app/_components/image/SmartImage";
 import {
   AlertTriangle,
   ArrowRight,
@@ -32,16 +33,43 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Pagination } from "@/app/_components/reuseable/Pagination";
+import {
+  computeProductPricing,
+  type ProductPricing,
+} from "@/app/_lib/utils/discount-pricing";
+import type { DiscountRow } from "@/app/_lib/types/discount";
+import { getActiveDiscounts } from "@/app/_lib/data-services/discount-service";
 import { ProductCard } from "../product/ProductCard";
+import ProductFilters from "../product/ProductFilters";
 
 export default function StoreClientWrapper({
   store: initialStore,
   initialProducts,
+  initialDiscounts = [],
 }: any) {
   const [store, setStore] = useState(initialStore);
   const [products, setProducts] = useState(initialProducts);
+  const [discounts, setDiscounts] = useState<DiscountRow[]>(initialDiscounts);
   const [searchQuery, setSearchQuery] = useState("");
+  const [displayProducts, setDisplayProducts] = useState(initialProducts);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Page size aligned with the 1-col/2-col/4-col grid breakpoints
+  const [pageSize, setPageSize] = useState(16);
+  useEffect(() => {
+    const compute = () => {
+      const w = window.innerWidth;
+      if (w < 640) return 8; // 1 col × 8 rows
+      if (w < 1024) return 12; // 2 cols × 6 rows
+      return 16; // 4 cols × 4 rows
+    };
+    const update = () => setPageSize(compute());
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
   // Modal & Edit States
   const [isOwner, setIsOwner] = useState(false); // true only when the logged-in user is this store's owner
@@ -61,16 +89,51 @@ export default function StoreClientWrapper({
   const [dealerPhone, setDealerPhone] = useState("");
   const [copied, setCopied] = useState(false);
   const [editForm, setEditForm] = useState({ ...initialStore });
+  const gridRef = useRef<HTMLDivElement>(null);
 
   // Admins can edit any store; owners can only edit their own
   const canEdit = isOwner || isAdmin;
 
-  // Filter Logic
+  // Search on top of the already-filtered list from ProductFilters
   const filteredProducts = useMemo(() => {
-    return products.filter((product: any) =>
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    if (!searchQuery.trim()) return displayProducts;
+    return displayProducts.filter((p: any) =>
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()),
     );
-  }, [products, searchQuery]);
+  }, [displayProducts, searchQuery]);
+
+  // Reset to page 1 whenever the filtered result set changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filteredProducts.length, searchQuery]);
+
+  const totalPages = Math.ceil(filteredProducts.length / pageSize);
+
+  const paginatedProducts = useMemo(
+    () =>
+      filteredProducts.slice(
+        (currentPage - 1) * pageSize,
+        currentPage * pageSize,
+      ),
+    [filteredProducts, currentPage, pageSize],
+  );
+
+  const goToPage = useCallback((page: number) => {
+    setCurrentPage(page);
+    // Scroll to the top of the product grid
+    gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, []);
+
+  // Effective price per product after applying active discounts (priority:
+  // product > category > store > global). Reused for the cards and the
+  // purchase modal so the discounted price is what reaches the order/revenue.
+  const pricingMap = useMemo(() => {
+    const map = new Map<string, ProductPricing>();
+    for (const p of products) {
+      map.set(p.id, computeProductPricing(p, discounts));
+    }
+    return map;
+  }, [products, discounts]);
 
   useEffect(() => {
     async function init() {
@@ -104,6 +167,15 @@ export default function StoreClientWrapper({
     }
     init();
   }, [store.owner_id, store.phone]);
+
+  // Fetch discounts client-side so anon visitors see pricing without depending
+  // on the server-side SSR context (which requires a Supabase public SELECT
+  // policy on the discounts table to work for unauthenticated users).
+  useEffect(() => {
+    getActiveDiscounts()
+      .then(setDiscounts)
+      .catch(() => {}); // fail silently if RLS blocks; server-side data is the fallback
+  }, []);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -155,13 +227,18 @@ export default function StoreClientWrapper({
       {/* ── 1. CINEMATIC HERO ───────────────────────────────── */}
       <section className="relative h-[60vh] w-full flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <motion.img
+          <motion.div
             initial={{ scale: 1.1, opacity: 0 }}
             animate={{ scale: 1, opacity: 0.3 }}
-            src={store.logo_url || undefined}
-            className="w-full h-full object-cover blur-[80px] saturate-150"
-            alt=""
-          />
+            className="absolute inset-0"
+          >
+            <SmartImage
+              src={store.logo_url || undefined}
+              alt=""
+              fill
+              className="w-full h-full object-cover blur-[80px] saturate-150"
+            />
+          </motion.div>
           <div className="absolute inset-0 bg-linear-to-b from-transparent via-marketplace-bg/60 to-marketplace-bg" />
         </div>
 
@@ -174,10 +251,11 @@ export default function StoreClientWrapper({
             <div className="absolute -inset-1 bg-marketplace-accent rounded-[3rem] blur opacity-20 animate-pulse" />
             <div className="relative w-36 h-36 md:w-48 md:h-48 rounded-[2.8rem] bg-marketplace-card border border-marketplace-border p-2 shadow-2xl overflow-hidden">
               {editForm.logo_url || store.logo_url ? (
-                <img
+                <SmartImage
                   src={editForm.logo_url || store.logo_url}
-                  className="w-full h-full object-cover rounded-[2.4rem]"
                   alt="Logo"
+                  fill
+                  className="w-full h-full object-cover rounded-[2.4rem]"
                 />
               ) : null}
               {isUploadingLogo && (
@@ -413,84 +491,106 @@ export default function StoreClientWrapper({
         </motion.div>
       </div>
 
-      {/* ── 4. PRODUCT GRID ─────────────────────────────────── */}
-      <main className="container mx-auto px-6 mt-16">
+      {/* ── 4. ADVANCED PRODUCT FILTERS ─────────────────────── */}
+      <div className="container mx-auto px-6 mt-16">
+        <ProductFilters products={products} onFiltered={setDisplayProducts} />
+      </div>
+
+      {/* ── 5. PRODUCT GRID ─────────────────────────────────── */}
+      <main ref={gridRef} className="container mx-auto px-6 mt-8 scroll-mt-24">
+        {/* Results summary */}
+        {filteredProducts.length > 0 && (
+          <p className="text-sm text-marketplace-text-secondary font-medium mb-6">
+            عرض{" "}
+            <span className="text-marketplace-text-primary font-bold">
+              {(currentPage - 1) * pageSize + 1}–
+              {Math.min(currentPage * pageSize, filteredProducts.length)}
+            </span>{" "}
+            من{" "}
+            <span className="text-marketplace-text-primary font-bold">
+              {filteredProducts.length}
+            </span>{" "}
+            منتج
+          </p>
+        )}
+
         <AnimatePresence mode="popLayout">
-          {filteredProducts.length > 0 ? (
-            <motion.div
-              layout
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
-            >
-              {filteredProducts.map((product: any) => {
-                // NOTE: Change 'stock' to your actual DB column name (e.g., 'quantity')
-                const isOutOfStock = product.stock <= 0;
+          {paginatedProducts.length > 0 ? (
+            <>
+              <motion.div
+                layout
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
+              >
+                {paginatedProducts.map((product: any) => {
+                  const isOutOfStock = (product.stock_quantity ?? 0) <= 0;
 
-                return (
-                  <motion.div
-                    layout
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    key={product.id}
-                    className="relative group/card"
-                  >
-                    {/* Owner/admin action overlay (z-30 to stay clickable above out-of-stock overlay) */}
-                    {canEdit && (
-                      <div className="absolute top-3 left-3 z-30 flex gap-2 transition-all duration-200">
-                        {/* Edit */}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setManagingProduct(product);
-                          }}
-                          className="w-9 h-9 cursor-pointer bg-marketplace-card/90 backdrop-blur-md border border-marketplace-border rounded-xl flex items-center justify-center text-marketplace-text-secondary hover:text-marketplace-accent hover:border-marketplace-accent/50 transition-all shadow-lg"
-                          title="تعديل"
-                        >
-                          <Pencil size={15} />
-                        </button>
-
-                        {/* Delete (with confirm) */}
-                        {/* Delete button is now handled inside ProductCard via ConfirmDeleteModal */}
-                      </div>
-                    )}
-
-                    {/* Out of Stock Overlay */}
-                    {isOutOfStock && (
-                      <div className="absolute inset-0 z-20 flex items-center justify-center bg-marketplace-bg/30 backdrop-blur-[2px] rounded-[2rem] pointer-events-none">
-                        <div className="bg-destructive/90 text-white px-6 py-2 rounded-xl font-bold shadow-xl flex items-center gap-2 transform -rotate-12 border border-destructive/50">
-                          <AlertTriangle size={18} />
-                          <span>نفذت الكمية</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Card itself */}
-                    <div
-                      onClick={() => {
-                        // Only open purchase modal for regular visitors on in-stock products
-                        if (!canEdit && !isOutOfStock) {
-                          setSelectedProduct(product);
-                        }
-                      }}
-                      className={`transition-all duration-300 ${
-                        !canEdit && !isOutOfStock
-                          ? "cursor-pointer"
-                          : !canEdit && isOutOfStock
-                            ? "cursor-not-allowed opacity-60 grayscale-[50%]"
-                            : "" // Owner/admin sees the card normally to manage it
-                      }`}
+                  return (
+                    <motion.div
+                      layout
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      key={product.id}
+                      className="relative group/card"
                     >
-                      <ProductCard
-                        product={product}
-                        isOwner={canEdit}
-                        onDelete={handleDeleteProduct}
-                        // Optionally, pass deleting state if you want to show loading in the modal
-                      />
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </motion.div>
+                      {/* Owner/admin action overlay (z-30 to stay clickable above out-of-stock overlay) */}
+                      {canEdit && (
+                        <div className="absolute top-3 left-3 z-30 flex gap-2 transition-all duration-200">
+                          {/* Edit */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setManagingProduct(product);
+                            }}
+                            className="w-9 h-9 cursor-pointer bg-marketplace-card/90 backdrop-blur-md border border-marketplace-border rounded-xl flex items-center justify-center text-marketplace-text-secondary hover:text-marketplace-accent hover:border-marketplace-accent/50 transition-all shadow-lg"
+                            title="تعديل"
+                          >
+                            <Pencil size={15} />
+                          </button>
+
+                          {/* Delete (with confirm) */}
+                          {/* Delete button is now handled inside ProductCard via ConfirmDeleteModal */}
+                        </div>
+                      )}
+
+                      {/* Out of Stock Overlay */}
+                      {isOutOfStock && (
+                        <div className="absolute inset-0 z-20 flex items-center justify-center bg-marketplace-bg/30 backdrop-blur-[2px] rounded-[2rem] pointer-events-none">
+                          <div className="bg-destructive/90 text-white px-6 py-2 rounded-xl font-bold shadow-xl flex items-center gap-2 transform -rotate-12 border border-destructive/50">
+                            <AlertTriangle size={18} />
+                            <span>نفذت الكمية</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Card itself */}
+                      <div
+                        onClick={() => {
+                          // Only open purchase modal for regular visitors on in-stock products
+                          if (!canEdit && !isOutOfStock) {
+                            setSelectedProduct(product);
+                          }
+                        }}
+                        className={`transition-all duration-300 ${
+                          !canEdit && !isOutOfStock
+                            ? "cursor-pointer"
+                            : !canEdit && isOutOfStock
+                              ? "cursor-not-allowed opacity-60 grayscale-[50%]"
+                              : "" // Owner/admin sees the card normally to manage it
+                        }`}
+                      >
+                        <ProductCard
+                          product={product}
+                          isOwner={canEdit}
+                          onDelete={handleDeleteProduct}
+                          pricing={pricingMap.get(product.id)}
+                        />
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            </>
           ) : (
             /* Empty State */
             <motion.div
@@ -524,13 +624,23 @@ export default function StoreClientWrapper({
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* ── Pagination ── */}
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={goToPage}
+          />
+        )}
       </main>
 
-      {/* ── 5. MODALS ───────────────────────────────────────── */}
+      {/* ── 6. MODALS ───────────────────────────────────────── */}
 
       {/* View product (customers) */}
       <ProductModal
         product={selectedProduct}
+        pricing={selectedProduct ? pricingMap.get(selectedProduct.id) : null}
         isOpen={!!selectedProduct}
         onClose={() => setSelectedProduct(null)}
         dealer_phone={dealerPhone}
@@ -543,6 +653,7 @@ export default function StoreClientWrapper({
         onClose={() => setIsAddModalOpen(false)}
         storeId={store?.id}
         onProductAdded={(newP: any) => setProducts([newP, ...products])}
+        isAdmin={isAdmin}
       />
 
       {/* Edit / manage product (owner) */}
@@ -552,6 +663,7 @@ export default function StoreClientWrapper({
         storeId={store?.id}
         onClose={() => setManagingProduct(null)}
         onProductUpdated={handleProductUpdated}
+        isAdmin={isAdmin}
       />
     </div>
   );

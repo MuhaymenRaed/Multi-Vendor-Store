@@ -14,8 +14,8 @@ import {
   uploadProductImages,
 } from "@/app/_lib/data-services/products-service";
 import { AnimatePresence, motion } from "framer-motion";
+import { CategorySelect } from "@/app/_components/ui/product/CategorySelect";
 import {
-  AlignLeft,
   ChevronDown,
   DollarSign,
   Hash,
@@ -355,31 +355,16 @@ export function ProductModal({
               <div className="space-y-2">
                 <label className="text-[11px] font-bold text-marketplace-text-secondary uppercase">
                   الفئة
+                  <span className="mr-2 text-marketplace-accent/60 normal-case tracking-normal font-medium">
+                    (يمكنك إضافة أو حذف الفئات)
+                  </span>
                 </label>
-                <div className="relative group">
-                  <AlignLeft
-                    size={18}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-marketplace-text-secondary/50 group-focus-within:text-marketplace-accent transition-colors"
-                  />
-                  <select
-                    value={form.category_id}
-                    onChange={(e) =>
-                      setForm({ ...form, category_id: e.target.value })
-                    }
-                    className="w-full bg-marketplace-bg border border-marketplace-border focus:border-marketplace-accent/50 rounded-2xl py-3.5 pr-11 pl-10 outline-none text-marketplace-text-primary font-bold transition-all appearance-none cursor-pointer"
-                  >
-                    <option value="">بدون فئة</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown
-                    size={16}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-marketplace-text-secondary/50 pointer-events-none"
-                  />
-                </div>
+                <CategorySelect
+                  value={form.category_id}
+                  onChange={(id) => setForm({ ...form, category_id: id })}
+                  isAdmin={true}
+                  disabled={isLoading}
+                />
               </div>
 
               {/* Description */}

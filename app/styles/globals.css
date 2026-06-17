@@ -128,6 +128,15 @@
   animation: shimmer 1.5s infinite;
 }
 
+/* Hide scrollbar but keep scrollability (used for horizontal pill rows) */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* Slim scrollbar to maintain the clean aesthetic */
 ::-webkit-scrollbar {
   width: 5px;

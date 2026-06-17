@@ -304,12 +304,22 @@ export async function getStorePageData(storeId: string) {
 
   const { data: products } = await supabase
     .from("products")
-    .select("*")
+    .select("*, categories(id, name)")
     .eq("is_deleted", false)
     .eq("store_id", store.id)
     .order("created_at", { ascending: false });
 
-  return { store, products: products || [] };
+  // Active discounts that could apply to this store's products (global, this
+  // store, or any product/category). Final date-window check is done in the UI
+  // via isDiscountLive so a just-started discount applies without a refetch.
+  const nowIso = new Date().toISOString();
+  const { data: discounts } = await supabase
+    .from("discounts")
+    .select("*")
+    .eq("status", "active")
+    .or(`end_date.is.null,end_date.gte.${nowIso}`);
+
+  return { store, products: products || [], discounts: discounts || [] };
 }
 
 // app/_lib/data-services/dashboard-service.ts

@@ -187,7 +187,10 @@ export default function Footer() {
             ))}
           </div>
           <div className="mt-16 pt-8 border-t border-border/50 flex items-center justify-center text-sm text-marketplace-text-secondary">
-            <p>© {new Date().getFullYear()} لنك الصناعة. جميع الحقوق محفوظة.</p>
+            <p>
+              © {new Date().getFullYear()} لنك الصناعة. جميع الحقوق محفوظة. |
+              QRCode Team™
+            </p>
           </div>
         </div>
       </footer>

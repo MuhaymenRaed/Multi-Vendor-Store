@@ -9,9 +9,15 @@ export default async function Page({
   params: Promise<{ storeId: string }>;
 }) {
   const { storeId } = await params;
-  const { store, products } = await getStorePageData(storeId);
+  const { store, products, discounts } = await getStorePageData(storeId);
 
   if (!store) notFound();
 
-  return <StoreClientWrapper store={store} initialProducts={products || []} />;
+  return (
+    <StoreClientWrapper
+      store={store}
+      initialProducts={products || []}
+      initialDiscounts={discounts || []}
+    />
+  );
 }

@@ -347,6 +347,37 @@ export async function getCategoriesForSelect() {
   if (error) throw new Error(error.message);
   return data || [];
 }
+
+export async function getProductsForSelect() {
+  const { data, error } = await supabase
+    .from("products")
+    .select("id, name")
+    .eq("is_deleted", false)
+    .order("name");
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+export async function createCategory(name: string) {
+  const slug = name
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9؀-ۿ-]/g, "");
+  const { data, error } = await supabase
+    .from("categories")
+    .insert([{ name: name.trim(), slug }])
+    .select("id, name")
+    .single();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function deleteCategory(id: number) {
+  const { error } = await supabase.from("categories").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+}
+
 // 5️⃣ Admin Stores
 export async function getAdminStores() {
   const { data, error } = await supabase

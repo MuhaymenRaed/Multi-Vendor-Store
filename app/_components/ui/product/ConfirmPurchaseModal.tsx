@@ -14,6 +14,8 @@ type ConfirmPurchaseModalProps = {
   onClose: () => void;
   onConfirm: () => Promise<void>;
   product: any;
+  /** Effective price (after discounts). Falls back to product.price. */
+  price?: number;
   loading: boolean;
 };
 
@@ -22,9 +24,12 @@ export function ConfirmPurchaseModal({
   onClose,
   onConfirm,
   product,
+  price,
   loading,
 }: ConfirmPurchaseModalProps) {
   if (!isOpen) return null;
+
+  const displayPrice = price ?? product?.price ?? 0;
 
   return (
     <AnimatePresence>
@@ -82,7 +87,7 @@ export function ConfirmPurchaseModal({
               المبلغ الإجمالي
             </span>
             <span className="text-xl font-black text-marketplace-accent">
-              {(product?.price ?? 0).toLocaleString("en-US")} د.ع
+              {displayPrice.toLocaleString("en-US")} د.ع
             </span>
           </div>
 

@@ -9,6 +9,7 @@ import {
   Shield,
   Store,
   Sun,
+  TicketPercent,
   TrendingUp,
   Users,
   X, // Changed to X for clear "Close" action
@@ -35,6 +36,7 @@ const navigationItems = [
   { id: "users" as const, label: "المستخدمين", icon: Users },
   { id: "stores" as const, label: "المتاجر", icon: Store },
   { id: "products" as const, label: "المنتجات", icon: Package },
+  { id: "discounts" as const, label: "الخصومات", icon: TicketPercent },
   { id: "revenue" as const, label: "الإيرادات", icon: DollarSign },
 ];
 

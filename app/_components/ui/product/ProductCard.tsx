@@ -1,9 +1,10 @@
 "use client";
 
 import { ImageSlider } from "@/app/_components/image/ImageSlider";
-import { AlertTriangle, Ban, Flame, Trash2 } from "lucide-react";
+import { AlertTriangle, Ban, Flame, Tag, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
+import type { ProductPricing } from "@/app/_lib/utils/discount-pricing";
 
 import { ConfirmDeleteModal } from "../../reuseable/ConfirmDeleteModal";
 
@@ -18,6 +19,8 @@ interface ProductCardProps {
   };
   isOwner?: boolean;
   onDelete?: (productId: string) => Promise<void> | void;
+  /** Effective pricing after discounts; when absent the raw price is shown. */
+  pricing?: ProductPricing | null;
 }
 
 const LOW_STOCK_THRESHOLD = 5;
@@ -26,7 +29,10 @@ export function ProductCard({
   product,
   isOwner = false,
   onDelete,
+  pricing,
 }: ProductCardProps) {
+  const hasDiscount = !!pricing?.hasDiscount;
+  const displayPrice = pricing?.finalPrice ?? product.price;
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -128,6 +134,18 @@ export function ProductCard({
                 {stock} في المخزن
               </div>
             )}
+
+          {/* Discount badge (top-left) */}
+          {hasDiscount && !isOutOfStock && (
+            <div className="absolute top-2 left-2 z-30 flex items-center gap-1 bg-marketplace-accent text-white text-[10px] font-black px-2.5 py-1.5 rounded-full shadow-lg">
+              <Tag size={11} className="shrink-0" />
+              <span>
+                {pricing!.appliedDiscount?.discount_type === "fixed_amount"
+                  ? `خصم ${pricing!.amountOff.toLocaleString("en-US")} د.ع`
+                  : `خصم ${pricing!.percentOff}%`}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* ── Details ── */}
@@ -150,33 +168,41 @@ export function ProductCard({
           </p>
 
           <div className="flex items-center justify-between mt-auto pt-2">
-            <div className="flex items-baseline gap-1">
-              <span
-                className={`text-2xl font-black ${
-                  isOutOfStock
-                    ? "text-marketplace-text-secondary/50 line-through"
-                    : isLastUnit
-                      ? "text-rose-400"
-                      : isLowStock
-                        ? "text-amber-400"
-                        : "text-marketplace-accent"
-                }`}
-              >
-                {product.price.toLocaleString("en-US")}
-              </span>
-              <span
-                className={`text-xs font-bold opacity-80 ${
-                  isOutOfStock
-                    ? "text-marketplace-text-secondary/50"
-                    : isLastUnit
-                      ? "text-rose-400"
-                      : isLowStock
-                        ? "text-amber-400"
-                        : "text-marketplace-accent"
-                }`}
-              >
-                د.ع
-              </span>
+            <div className="flex flex-col gap-0.5">
+              {/* Original price (struck through) when discounted */}
+              {hasDiscount && !isOutOfStock && (
+                <span className="text-xs font-bold text-marketplace-text-secondary/60 line-through">
+                  {product.price.toLocaleString("en-US")} د.ع
+                </span>
+              )}
+              <div className="flex items-baseline gap-1">
+                <span
+                  className={`text-2xl font-black ${
+                    isOutOfStock
+                      ? "text-marketplace-text-secondary/50 line-through"
+                      : isLastUnit
+                        ? "text-rose-400"
+                        : isLowStock
+                          ? "text-amber-400"
+                          : "text-marketplace-accent"
+                  }`}
+                >
+                  {displayPrice.toLocaleString("en-US")}
+                </span>
+                <span
+                  className={`text-xs font-bold opacity-80 ${
+                    isOutOfStock
+                      ? "text-marketplace-text-secondary/50"
+                      : isLastUnit
+                        ? "text-rose-400"
+                        : isLowStock
+                          ? "text-amber-400"
+                          : "text-marketplace-accent"
+                  }`}
+                >
+                  د.ع
+                </span>
+              </div>
             </div>
 
             {isOutOfStock && (

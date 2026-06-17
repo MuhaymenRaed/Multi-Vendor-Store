@@ -5,7 +5,7 @@ import { getProfile } from "@/app/_lib/data-services/profile-service";
 import { ModeToggle } from "@/app/_lib/ModeToggle";
 import { supabase } from "@/app/_lib/supabase/client";
 import { LogoIcon } from "../reuseable/LogoIcon";
-import Image from "next/image";
+import { SmartImage } from "@/app/_components/image/SmartImage";
 import {
   Clock,
   Loader2,
@@ -179,12 +179,13 @@ export default function Header() {
                     {user ? (
                       <>
                         {/* Avatar with subtle glow instead of thick border */}
-                        <div className="w-8 h-8 rounded-full border border-marketplace-accent/20 overflow-hidden shadow-[0_0_10px_rgba(20,184,166,0.1)] group-hover:border-marketplace-accent/50 transition-colors">
+                        <div className="relative w-8 h-8 rounded-full border border-marketplace-accent/20 overflow-hidden shadow-[0_0_10px_rgba(20,184,166,0.1)] group-hover:border-marketplace-accent/50 transition-colors">
                           {profile?.avatar_url ? (
-                            <img
+                            <SmartImage
                               src={profile.avatar_url}
-                              className="w-full h-full object-cover"
                               alt="avatar"
+                              fill
+                              className="w-full h-full object-cover"
                             />
                           ) : (
                             <div className="w-full h-full bg-marketplace-bg flex items-center justify-center">

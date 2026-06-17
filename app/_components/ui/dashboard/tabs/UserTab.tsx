@@ -13,6 +13,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useResponsivePageSize } from "@/app/_lib/hooks/useResponsivePageSize";
 import { toast } from "sonner";
 import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal";
 import { TableActions, buildUserActions } from "../components/TableActions";
@@ -30,31 +31,38 @@ export function UsersTab({ data: initialData }: { data: any[] }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  const ITEMS_PER_PAGE = 20;
-  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
+  const pageSize = useResponsivePageSize(20);
+  const [visibleCount, setVisibleCount] = useState(pageSize);
 
   // 1. Fetch current logged-in user ID
   useEffect(() => {
     getAdminUsers();
   }, [getAdminUsers]);
 
-  const sentinelRef = useCallback((node: HTMLDivElement | null) => {
-    if (!node) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setVisibleCount((prev) => prev + ITEMS_PER_PAGE);
-        }
-      },
-      { threshold: 0.1 },
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
+  useEffect(() => {
+    setVisibleCount(pageSize);
+  }, [pageSize]);
+
+  const sentinelRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      if (!node) return;
+      const observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting) {
+            setVisibleCount((prev) => prev + pageSize);
+          }
+        },
+        { threshold: 0.1 },
+      );
+      observer.observe(node);
+      return () => observer.disconnect();
+    },
+    [pageSize],
+  );
 
   useEffect(() => {
-    setVisibleCount(ITEMS_PER_PAGE);
-  }, [searchQuery, activeFilter]);
+    setVisibleCount(pageSize);
+  }, [pageSize, searchQuery, activeFilter]);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -288,6 +296,21 @@ export function UsersTab({ data: initialData }: { data: any[] }) {
             </tbody>
           </table>
         </div>
+        {visibleCount < filteredUsers.length && (
+          <div ref={sentinelRef} className="flex justify-center py-6">
+            <span className="text-xs text-marketplace-text-secondary font-bold animate-pulse">
+              جاري تحميل المزيد...
+            </span>
+          </div>
+        )}
+        {filteredUsers.length > 0 && (
+          <div className="text-center py-3">
+            <span className="text-xs text-marketplace-text-secondary">
+              عرض {Math.min(visibleCount, filteredUsers.length)} من{" "}
+              {filteredUsers.length}
+            </span>
+          </div>
+        )}
       </div>
 
       <UserModal

@@ -59,6 +59,47 @@ export function Hero() {
           <p className="text-lg md:text-xl text-marketplace-text-secondary max-w-2xl mx-auto mb-12 leading-relaxed opacity-90">
             منصة تربطك بأفضل التجار المحليين. جودة، ثقة، وسهولة في الوصول.
           </p>
+
+          {/* Moving Text Box */}
+          <motion.div
+            className="relative overflow-hidden mb-8 -mx-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.8 }}
+          >
+            <div
+              className="relative bg-gradient-to-r from-marketplace-accent/20 via-marketplace-accent/30 to-marketplace-accent/20 dark:from-marketplace-accent/30 dark:via-marketplace-accent/40 dark:to-marketplace-accent/30 border-y border-marketplace-accent/40 backdrop-blur-sm py-4 px-6 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-12 before:bg-gradient-to-r before:from-marketplace-bg to-transparent before:z-10 after:absolute after:right-0 after:top-0 after:bottom-0 after:w-12 after:bg-gradient-to-l after:from-marketplace-bg to-transparent after:z-10"
+              dir="ltr"
+            >
+              <div className="overflow-hidden w-full flex justify-start">
+                <motion.div
+                  className="flex whitespace-nowrap w-max"
+                  animate={{ x: ["0%", "-50%"] }}
+                  transition={{
+                    ease: "linear",
+                    duration: 250 /* Adjust this number to make it faster or slower */,
+                    repeat: Infinity,
+                  }}
+                >
+                  {/* We render a flat list of 8 items. 
+                  The first 4 make up the first half (0% to -50%), 
+                  and the last 4 make up the second half. 
+                  They are perfectly identical down to the sub-pixel.
+                */}
+                  {[...Array(80)].map((_, i) => (
+                    <span
+                      key={i}
+                      dir="rtl"
+                      className="inline-block px-6 text-marketplace-accent font-bold text-sm md:text-base tracking-wide flex-shrink-0"
+                    >
+                      توصيل سريع آمن • تجار موثوقين • أسعار تنافسية • جودة
+                      مضمونة خصومات وعروض حصرية • دعم محلي مباشر • اكتشف المزيد
+                    </span>
+                  ))}
+                </motion.div>
+              </div>
+            </div>
+          </motion.div>
         </motion.div>
 
         <motion.div

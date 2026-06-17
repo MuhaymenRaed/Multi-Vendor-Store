@@ -4,6 +4,7 @@ import { Badge } from "@/app/_components/shadCN-ui/badge";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
+import { SmartImage } from "@/app/_components/image/SmartImage";
 
 export function StoreCard({ store }: any) {
   const [isHovered, setIsHovered] = useState(false);
@@ -41,15 +42,20 @@ export function StoreCard({ store }: any) {
               )}
             </AnimatePresence>
 
-            <motion.img
-              src={store.logo_url || undefined}
-              alt={store.name}
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: isLoaded ? 1 : 0 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
-              onLoad={() => setIsLoaded(true)}
-              className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-            />
+              className="w-full h-full"
+            >
+              <SmartImage
+                src={store.logo_url || undefined}
+                alt={store.name}
+                fill
+                className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                onLoad={() => setIsLoaded(true)}
+              />
+            </motion.div>
           </>
         ) : null}
         {/* Subtle Overlay Gradient */}
