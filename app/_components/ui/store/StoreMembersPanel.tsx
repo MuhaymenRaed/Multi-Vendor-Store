@@ -49,10 +49,12 @@ export function StoreMembersPanel({ storeId, onClose }: StoreMembersPanelProps) 
     { id: string; full_name: string; email: string }[]
   >([]);
   const [searching, setSearching] = useState(false);
+  const [isFocused, setIsFocused] = useState(false);
   const [addingId, setAddingId] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const blurRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -77,28 +79,31 @@ export function StoreMembersPanel({ storeId, onClose }: StoreMembersPanelProps) 
     return () => window.removeEventListener("keydown", handle);
   }, [onClose]);
 
-  // Debounced profile search
-  useEffect(() => {
-    if (searchRef.current) clearTimeout(searchRef.current);
-    if (searchQuery.trim().length < 2) {
-      setSearchResults([]);
-      return;
-    }
-    searchRef.current = setTimeout(async () => {
+  // Debounced search — fires on every keystroke and on focus (empty query = recent users)
+  const runSearch = useCallback(
+    (query: string) => {
+      if (searchRef.current) clearTimeout(searchRef.current);
       setSearching(true);
-      try {
-        const results = await searchProfiles(searchQuery);
-        // Exclude people who are already members or the current user
-        const memberIds = new Set(members.map((m) => m.user_id));
-        if (currentUserId) memberIds.add(currentUserId);
-        setSearchResults(results.filter((r) => !memberIds.has(r.id)));
-      } catch {
-        // silently fail
-      } finally {
-        setSearching(false);
-      }
-    }, 400);
-  }, [searchQuery, members, currentUserId]);
+      searchRef.current = setTimeout(async () => {
+        try {
+          const results = await searchProfiles(query);
+          // Only exclude users already in the members list
+          const memberIds = new Set(members.map((m) => m.user_id));
+          setSearchResults(results.filter((r) => !memberIds.has(r.id)));
+        } catch {
+          // silently fail
+        } finally {
+          setSearching(false);
+        }
+      }, query ? 250 : 0); // instant on focus, debounced on type
+    },
+    [members, currentUserId],
+  );
+
+  useEffect(() => {
+    if (isFocused) runSearch(searchQuery);
+    else setSearchResults([]);
+  }, [searchQuery, isFocused, runSearch]);
 
   async function handleAdd(user: { id: string; full_name: string; email: string }) {
     if (!currentUserId) return;
@@ -149,7 +154,7 @@ export function StoreMembersPanel({ storeId, onClose }: StoreMembersPanelProps) 
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60]"
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[99]"
       />
 
       {/* Panel */}
@@ -159,47 +164,55 @@ export function StoreMembersPanel({ storeId, onClose }: StoreMembersPanelProps) 
         animate={{ x: 0 }}
         exit={{ x: "100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 32 }}
-        className="fixed top-0 left-0 h-full w-full max-w-lg bg-marketplace-card border-l border-marketplace-border shadow-2xl z-[70] flex flex-col overflow-hidden"
+        className="fixed top-0 left-0 h-full w-full sm:max-w-lg bg-marketplace-card border-l border-marketplace-border shadow-2xl z-120 flex flex-col overflow-hidden"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-marketplace-border bg-gradient-to-l from-blue-500/5 to-transparent shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 border-b border-marketplace-border bg-linear-to-l from-blue-500/5 to-transparent shrink-0">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-blue-500/15 text-blue-500">
-              <Users size={20} />
+            <div className="p-2 rounded-xl bg-blue-500/15 text-blue-500 shrink-0">
+              <Users size={18} />
             </div>
             <div>
-              <h2 className="text-lg font-black text-marketplace-text-primary">
+              <h2 className="text-base sm:text-lg font-black text-marketplace-text-primary">
                 فريق المتجر
               </h2>
-              <p className="text-xs text-marketplace-text-secondary font-medium">
+              <p className="text-xs text-marketplace-text-secondary font-medium hidden sm:block">
                 إضافة مالكين مشاركين ومساعدين
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-marketplace-card-hover text-marketplace-text-secondary transition-colors cursor-pointer"
+            className="p-2 rounded-full hover:bg-marketplace-card-hover text-marketplace-text-secondary transition-colors cursor-pointer shrink-0"
           >
             <X size={20} />
           </button>
         </div>
 
         {/* Search to invite */}
-        <div className="px-6 py-4 border-b border-marketplace-border/50 shrink-0">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-marketplace-border/50 shrink-0">
           <p className="text-xs font-bold text-marketplace-text-secondary mb-2 uppercase tracking-widest">
             إضافة عضو جديد
           </p>
           <div className="relative">
             <Search
               size={16}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-marketplace-text-secondary/50"
+              className={`absolute right-4 top-1/2 -translate-y-1/2 transition-colors ${isFocused ? "text-marketplace-accent" : "text-marketplace-text-secondary/50"}`}
             />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => {
+                if (blurRef.current) clearTimeout(blurRef.current);
+                setIsFocused(true);
+              }}
+              onBlur={() => {
+                // Delay so click on a result fires before hiding the dropdown
+                blurRef.current = setTimeout(() => setIsFocused(false), 150);
+              }}
               placeholder="ابحث بالاسم أو البريد الإلكتروني..."
-              className="w-full bg-marketplace-bg border border-marketplace-border rounded-2xl py-3 pr-11 pl-4 text-marketplace-text-primary outline-none focus:border-marketplace-accent/40 transition-all text-sm font-medium"
+              className={`w-full bg-marketplace-bg border rounded-2xl py-3 pr-11 pl-4 text-marketplace-text-primary outline-none transition-all text-sm font-medium ${isFocused ? "border-marketplace-accent/50 shadow-sm shadow-marketplace-accent/10" : "border-marketplace-border"}`}
             />
             {searching && (
               <Loader2
@@ -209,32 +222,43 @@ export function StoreMembersPanel({ storeId, onClose }: StoreMembersPanelProps) 
             )}
           </div>
 
-          {/* Search results dropdown */}
+          {/* Suggestions / search results dropdown */}
           <AnimatePresence>
-            {searchResults.length > 0 && (
+            {isFocused && searchResults.length > 0 && (
               <motion.div
-                initial={{ opacity: 0, y: -8 }}
+                initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                className="mt-2 bg-marketplace-bg border border-marketplace-border rounded-2xl overflow-hidden shadow-xl"
+                exit={{ opacity: 0, y: -6 }}
+                transition={{ duration: 0.15 }}
+                className="mt-2 bg-marketplace-card border border-marketplace-border rounded-2xl overflow-hidden shadow-2xl"
               >
+                {!searchQuery && (
+                  <p className="px-4 pt-3 pb-1 text-[10px] font-black text-marketplace-text-secondary/50 uppercase tracking-widest">
+                    مستخدمون حديثون
+                  </p>
+                )}
                 {searchResults.map((user) => (
                   <div
                     key={user.id}
                     className="flex items-center justify-between px-4 py-3 hover:bg-marketplace-card-hover transition-colors"
                   >
-                    <div>
-                      <p className="text-sm font-bold text-marketplace-text-primary">
-                        {user.full_name}
-                      </p>
-                      <p className="text-xs text-marketplace-text-secondary font-medium">
-                        {user.email}
-                      </p>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-marketplace-accent/10 flex items-center justify-center text-marketplace-accent text-xs font-black shrink-0">
+                        {(user.full_name?.[0] ?? "؟").toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-marketplace-text-primary truncate">
+                          {user.full_name}
+                        </p>
+                        <p className="text-xs text-marketplace-text-secondary font-medium truncate">
+                          {user.email}
+                        </p>
+                      </div>
                     </div>
                     <button
                       onClick={() => handleAdd(user)}
                       disabled={addingId === user.id}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-marketplace-accent text-white text-xs font-black rounded-xl hover:brightness-110 transition-all cursor-pointer disabled:opacity-50"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-marketplace-accent text-white text-xs font-black rounded-xl hover:brightness-110 transition-all cursor-pointer disabled:opacity-50 shrink-0 mr-2"
                     >
                       {addingId === user.id ? (
                         <Loader2 size={12} className="animate-spin" />
@@ -251,7 +275,7 @@ export function StoreMembersPanel({ storeId, onClose }: StoreMembersPanelProps) 
         </div>
 
         {/* Members list */}
-        <div className="flex-1 overflow-y-auto px-6 py-4 cute-scrollbar space-y-3">
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-4 cute-scrollbar space-y-2 sm:space-y-3">
           <p className="text-xs font-bold text-marketplace-text-secondary uppercase tracking-widest mb-3">
             الأعضاء الحاليون ({members.length})
           </p>
@@ -281,30 +305,30 @@ export function StoreMembersPanel({ storeId, onClose }: StoreMembersPanelProps) 
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="flex items-center justify-between gap-3 bg-marketplace-bg border border-marketplace-border rounded-2xl p-4"
+                className="flex items-center justify-between gap-2 sm:gap-3 bg-marketplace-bg border border-marketplace-border rounded-2xl p-3 sm:p-4"
               >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-marketplace-card-hover flex items-center justify-center text-marketplace-text-secondary shrink-0">
-                    <Shield size={16} />
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-marketplace-card-hover flex items-center justify-center text-marketplace-text-secondary shrink-0">
+                    <Shield size={14} />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-black text-marketplace-text-primary truncate">
+                    <p className="text-sm font-black text-marketplace-text-primary truncate max-w-[100px] sm:max-w-[180px]">
                       {member.profiles?.full_name ?? "—"}
                     </p>
-                    <p className="text-xs text-marketplace-text-secondary font-medium truncate">
+                    <p className="text-xs text-marketplace-text-secondary font-medium truncate max-w-[100px] sm:max-w-[180px]">
                       {member.profiles?.email ?? "—"}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                   {/* Role selector */}
                   <select
                     value={member.role}
                     onChange={(e) =>
                       handleRoleChange(member.id, e.target.value as StoreMemberRole)
                     }
-                    className={`text-[11px] font-black px-2 py-1 rounded-xl border outline-none cursor-pointer bg-transparent transition-colors ${ROLE_STYLES[member.role]}`}
+                    className={`text-[10px] sm:text-[11px] font-black px-1.5 sm:px-2 py-1 rounded-xl border outline-none cursor-pointer bg-transparent transition-colors max-w-[90px] sm:max-w-none ${ROLE_STYLES[member.role]}`}
                   >
                     {(["assistant", "co_owner"] as StoreMemberRole[]).map((r) => (
                       <option key={r} value={r} className="bg-marketplace-card text-marketplace-text-primary">
@@ -333,7 +357,7 @@ export function StoreMembersPanel({ storeId, onClose }: StoreMembersPanelProps) 
         </div>
 
         {/* Info footer */}
-        <div className="px-6 py-4 border-t border-marketplace-border/50 shrink-0">
+        <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-marketplace-border/50 shrink-0">
           <p className="text-[11px] text-marketplace-text-secondary/60 font-medium leading-relaxed text-center">
             يمكن للمالكين المشاركين والمساعدين إدارة المنتجات وإضافتها.
             <br />

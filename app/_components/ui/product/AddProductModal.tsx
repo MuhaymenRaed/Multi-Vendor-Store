@@ -322,7 +322,7 @@ export function AddProductModal({
                 <textarea
                   rows={4}
                   placeholder="اكتب تفاصيل المنتج هنا..."
-                  value={form.description}
+                  value={form.description ?? ""}
                   onChange={(e) =>
                     setForm({ ...form, description: e.target.value })
                   }

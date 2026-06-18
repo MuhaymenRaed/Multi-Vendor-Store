@@ -247,11 +247,17 @@ export async function updateInquiryStatus(
 }
 
 /**
- * Accept a merchant inquiry and automatically create a store for the applicant.
- * Returns the created store (or null if the user is not yet registered).
+ * Accept a merchant inquiry.
+ *
+ * Logic:
+ *  - If a store already exists with the same name or slug → add the applicant
+ *    as a co_owner member of that existing store (no duplicate store created).
+ *  - Otherwise → create a brand-new store and set the applicant as owner.
+ *  - If the applicant is not registered yet → update status with a warning.
  */
 export async function acceptMerchantInquiry(inquiryId: string): Promise<{
   store: Record<string, unknown> | null;
+  linked: boolean;   // true = joined existing store, false = new store created
   warning: string | null;
 }> {
   // 1. Fetch the inquiry
@@ -262,52 +268,86 @@ export async function acceptMerchantInquiry(inquiryId: string): Promise<{
     .single();
   if (iqErr || !inquiry) throw new Error(iqErr?.message ?? "الطلب غير موجود");
 
-  // 2. Find a registered profile with the same email
-  const { data: profiles } = await supabase
+  const storeName: string = (inquiry.store_name ?? "").trim();
+
+  // 2. Build candidate slug from the requested store name
+  const candidateSlug = storeName
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9؀-ۿ-]/g, "")
+    .slice(0, 40);
+
+  // 3. Check if a store with the same name OR slug already exists
+  const { data: existingStores } = await supabase
+    .from("stores")
+    .select("id, name, slug, owner_id")
+    .eq("is_deleted", false)
+    .or(`name.ilike.${storeName},slug.ilike.${candidateSlug}`)
+    .limit(1);
+
+  const existingStore = existingStores?.[0] ?? null;
+
+  // 4. Find the registered profile for the applicant's email
+  const { data: profileRows } = await supabase
     .from("profiles")
     .select("id, full_name, email, phone")
     .ilike("email", inquiry.email ?? "")
     .limit(1);
 
-  const profile = profiles?.[0] ?? null;
+  const profile = profileRows?.[0] ?? null;
 
-  let createdStore: Record<string, unknown> | null = null;
+  let resultStore: Record<string, unknown> | null = null;
+  let linked = false;
   let warning: string | null = null;
 
-  if (profile) {
-    // 3a. Build a unique slug from the store name
-    const baseSlug = (inquiry.store_name as string)
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, "-")
-      .replace(/[^a-z0-9؀-ۿ-]/g, "")
-      .slice(0, 40);
-    const slug = `${baseSlug}-${Date.now().toString(36)}`;
+  if (!profile) {
+    // Applicant not registered yet — just accept the inquiry with a warning
+    warning = `المتجر لم يُعالَج تلقائياً — المستخدم (${inquiry.email}) غير مسجّل بعد في المنصة.`;
+  } else if (existingStore) {
+    // ── Existing store: add applicant as co_owner member ──────────────
+    // Avoid duplicate membership
+    const { data: already } = await supabase
+      .from("store_members")
+      .select("id")
+      .eq("store_id", existingStore.id)
+      .eq("user_id", profile.id)
+      .maybeSingle();
 
-    // 3b. Create the store
-    createdStore = await adminUpsertStore(undefined, {
+    if (!already) {
+      await supabase.from("store_members").insert([{
+        store_id: existingStore.id,
+        user_id: profile.id,
+        role: "co_owner",
+        added_by: null,
+      }]);
+    }
+
+    // Promote to seller
+    await supabase.from("profiles").update({ role: "seller" }).eq("id", profile.id);
+
+    resultStore = existingStore as Record<string, unknown>;
+    linked = true;
+  } else {
+    // ── New store: create it and set applicant as owner ────────────────
+    const uniqueSlug = `${candidateSlug}-${Date.now().toString(36)}`;
+
+    resultStore = await adminUpsertStore(undefined, {
       owner_id: profile.id,
-      name: inquiry.store_name,
-      slug,
+      name: storeName,
+      slug: uniqueSlug,
       phone: inquiry.phone ?? profile.phone ?? "",
       is_active: true,
       is_deleted: false,
     });
 
-    // 3c. Promote the user to 'seller' role so they can manage their store
-    await supabase
-      .from("profiles")
-      .update({ role: "seller" })
-      .eq("id", profile.id);
-  } else {
-    warning =
-      `المتجر لم يُنشأ تلقائياً — المستخدم (${inquiry.email}) غير مسجّل بعد في المنصة.`;
+    // Promote to seller
+    await supabase.from("profiles").update({ role: "seller" }).eq("id", profile.id);
   }
 
-  // 4. Mark the inquiry as accepted
+  // 5. Mark the inquiry as accepted
   await updateInquiryStatus(inquiryId, "accepted");
 
-  return { store: createdStore, warning };
+  return { store: resultStore, linked, warning };
 }
 
 // Service for the public form

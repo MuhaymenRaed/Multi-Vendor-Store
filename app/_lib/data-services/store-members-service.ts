@@ -15,11 +15,15 @@ export interface StoreMember {
 export async function getStoreMembers(storeId: string): Promise<StoreMember[]> {
   const { data, error } = await supabase
     .from("store_members")
-    .select("*, profiles(full_name, email, phone)")
+    .select("*, profiles!user_id(full_name, email, phone)")
     .eq("store_id", storeId)
     .order("created_at");
   if (error) throw new Error(error.message);
-  return (data ?? []) as StoreMember[];
+  // Normalise: the joined relation key will match the hint name
+  return (data ?? []).map((row: any) => ({
+    ...row,
+    profiles: row["profiles!user_id"] ?? row.profiles ?? null,
+  })) as StoreMember[];
 }
 
 export async function addStoreMember(
@@ -31,10 +35,14 @@ export async function addStoreMember(
   const { data, error } = await supabase
     .from("store_members")
     .insert([{ store_id: storeId, user_id: userId, role, added_by: addedBy }])
-    .select("*, profiles(full_name, email, phone)")
+    .select("*, profiles!user_id(full_name, email, phone)")
     .single();
   if (error) throw new Error(error.message);
-  return data as StoreMember;
+  const row = data as any;
+  return {
+    ...row,
+    profiles: row["profiles!user_id"] ?? row.profiles ?? null,
+  } as StoreMember;
 }
 
 export async function removeStoreMember(memberId: string): Promise<void> {
@@ -70,17 +78,22 @@ export async function isStoreMember(
   return !!data;
 }
 
-/** Search profiles by email or name for member invitation. */
+/** Search profiles by name/email. Pass empty string to get recent users. */
 export async function searchProfiles(
   query: string,
 ): Promise<{ id: string; full_name: string; email: string }[]> {
-  if (!query.trim() || query.trim().length < 2) return [];
-  const { data, error } = await supabase
+  const q = query.trim();
+  let builder = supabase
     .from("profiles")
     .select("id, full_name, email")
-    .or(`email.ilike.%${query}%,full_name.ilike.%${query}%`)
-    .neq("role", "admin")
+    .order("created_at", { ascending: false })
     .limit(8);
+
+  if (q) {
+    builder = builder.or(`full_name.ilike.%${q}%,email.ilike.%${q}%`);
+  }
+
+  const { data, error } = await builder;
   if (error) throw new Error(error.message);
   return data ?? [];
 }

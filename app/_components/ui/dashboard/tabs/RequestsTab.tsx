@@ -42,15 +42,20 @@ export function RequestsTab() {
   async function handleAccept(id: string) {
     setProcessingId(id);
     try {
-      const { store, warning } = await acceptMerchantInquiry(id);
+      const { store, linked, warning } = await acceptMerchantInquiry(id);
 
-      if (store) {
+      if (store && linked) {
         toast.success(
-          `✅ تم قبول الطلب وإنشاء المتجر "${(store as any).name}" تلقائياً`,
+          `تم ربط التاجر بالمتجر الموجود "${(store as any).name}"`,
+          { duration: 5000 },
+        );
+      } else if (store) {
+        toast.success(
+          `تم قبول الطلب وإنشاء المتجر "${(store as any).name}" تلقائياً`,
           { duration: 5000 },
         );
       } else {
-        toast(warning ?? "تم قبول الطلب لكن المتجر لم يُنشأ", {
+        toast(warning ?? "تم قبول الطلب لكن المتجر لم يُعالَج", {
           icon: "⚠️",
           duration: 6000,
         });

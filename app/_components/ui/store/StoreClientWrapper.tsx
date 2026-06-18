@@ -382,8 +382,8 @@ export default function StoreClientWrapper({
                 <span>{isEditing ? "حفظ" : "تعديل المتجر"}</span>
               </button>
             )}
-            {/* Discount management — owners & members */}
-            {isOwner && (
+            {/* Discount management — store owner and admins */}
+            {(isOwner || isAdmin) && (
               <button
                 onClick={() => setShowDiscountPanel(true)}
                 className="relative group flex items-center gap-2 cursor-pointer px-4 py-3 rounded-xl bg-marketplace-accent/10 border border-marketplace-accent/30 backdrop-blur-md hover:bg-marketplace-accent/20 transition-all text-marketplace-accent"
@@ -394,8 +394,8 @@ export default function StoreClientWrapper({
               </button>
             )}
 
-            {/* Team management — primary owner only (only they can add/remove members) */}
-            {isOwner && (
+            {/* Team management — admins only */}
+            {isAdmin && (
               <button
                 onClick={() => setShowMembersPanel(true)}
                 className="relative group flex items-center gap-2 cursor-pointer px-4 py-3 rounded-xl bg-blue-500/10 border border-blue-500/30 backdrop-blur-md hover:bg-blue-500/20 transition-all text-blue-500"
@@ -436,7 +436,7 @@ export default function StoreClientWrapper({
               </div>
               {isEditing ? (
                 <textarea
-                  value={editForm.description}
+                  value={editForm.description ?? ""}
                   onChange={(e) =>
                     setEditForm({ ...editForm, description: e.target.value })
                   }
@@ -709,9 +709,9 @@ export default function StoreClientWrapper({
         isAdmin={isAdmin}
       />
 
-      {/* Merchant discount panel — slide-in from left */}
+      {/* Discount panel — store owner and admins */}
       <AnimatePresence>
-        {showDiscountPanel && isOwner && (
+        {showDiscountPanel && (isOwner || isAdmin) && (
           <StoreDiscountPanel
             storeId={store.id}
             onClose={() => setShowDiscountPanel(false)}
@@ -719,9 +719,9 @@ export default function StoreClientWrapper({
         )}
       </AnimatePresence>
 
-      {/* Team members panel — slide-in from left */}
+      {/* Team members panel — admins only */}
       <AnimatePresence>
-        {showMembersPanel && isOwner && (
+        {showMembersPanel && isAdmin && (
           <StoreMembersPanel
             storeId={store.id}
             onClose={() => setShowMembersPanel(false)}

@@ -456,7 +456,7 @@ export function StoreModal({
                   />
                   <textarea
                     rows={2}
-                    value={formData.address}
+                    value={formData.address ?? ""}
                     onChange={(e) =>
                       setFormData({ ...formData, address: e.target.value })
                     }

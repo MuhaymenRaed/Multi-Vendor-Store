@@ -31,21 +31,30 @@ export async function getDiscounts(): Promise<DiscountWithTarget[]> {
 export async function getStoreDiscounts(
   storeId: string,
 ): Promise<DiscountWithTarget[]> {
-  // Fetch products in this store first (needed for product-scope filter)
+  // Fetch products in this store — need both ids (product scope) and category_ids (category scope)
   const { data: storeProducts } = await supabase
     .from("products")
-    .select("id")
+    .select("id, category_id")
     .eq("store_id", storeId)
     .eq("is_deleted", false);
-  const productIds = (storeProducts ?? []).map((p: { id: string }) => p.id);
 
-  const queries: Promise<{ data: DiscountWithTarget[] | null; error: { message: string } | null }>[] = [
+  const productIds = (storeProducts ?? []).map((p: { id: string }) => p.id);
+  const categoryIds = [
+    ...new Set(
+      (storeProducts ?? [])
+        .map((p: { category_id: number | null }) => p.category_id)
+        .filter((id): id is number => id != null),
+    ),
+  ];
+
+  type Q = Promise<{ data: DiscountWithTarget[] | null; error: { message: string } | null }>;
+  const queries: Q[] = [
     supabase
       .from("discounts")
       .select(TARGET_SELECT)
       .eq("scope", "store")
       .eq("store_id", storeId)
-      .order("created_at", { ascending: false }) as unknown as Promise<{ data: DiscountWithTarget[] | null; error: { message: string } | null }>,
+      .order("created_at", { ascending: false }) as unknown as Q,
   ];
 
   if (productIds.length > 0) {
@@ -55,7 +64,18 @@ export async function getStoreDiscounts(
         .select(TARGET_SELECT)
         .eq("scope", "product")
         .in("product_id", productIds)
-        .order("created_at", { ascending: false }) as unknown as Promise<{ data: DiscountWithTarget[] | null; error: { message: string } | null }>,
+        .order("created_at", { ascending: false }) as unknown as Q,
+    );
+  }
+
+  if (categoryIds.length > 0) {
+    queries.push(
+      supabase
+        .from("discounts")
+        .select(TARGET_SELECT)
+        .eq("scope", "category")
+        .in("category_id", categoryIds)
+        .order("created_at", { ascending: false }) as unknown as Q,
     );
   }
 

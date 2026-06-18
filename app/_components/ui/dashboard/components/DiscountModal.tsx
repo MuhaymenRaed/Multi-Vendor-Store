@@ -272,7 +272,7 @@ export function DiscountModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-100 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[130] flex items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -327,7 +327,7 @@ export function DiscountModal({
                 <Label>الوصف (اختياري)</Label>
                 <textarea
                   rows={2}
-                  value={form.description}
+                  value={form.description ?? ""}
                   onChange={(e) => set("description", e.target.value)}
                   placeholder="تفاصيل إضافية عن الخصم..."
                   className="w-full bg-marketplace-bg border border-marketplace-border rounded-2xl py-3 px-4 text-marketplace-text-primary font-medium outline-none resize-none focus:border-marketplace-accent/50 transition-all"
