@@ -4,6 +4,7 @@ import { MultiSelect } from "@/app/_components/ui/dashboard/components/MultiSele
 import {
   getCategoriesForSelect,
   getProductsForSelect,
+  getProductsForSelectByStore,
   getStoresForSelect,
 } from "@/app/_lib/data-services/admin-service";
 import {
@@ -42,6 +43,10 @@ interface DiscountModalProps {
   onClose: () => void;
   discount?: DiscountWithTarget | null;
   onSaved: (rows: DiscountWithTarget[]) => void;
+  /** Restrict which scopes are available. Omit for admin (all 4 scopes). */
+  allowedScopes?: DiscountScope[];
+  /** When set (merchant mode): auto-fills store target & filters products to this store. */
+  merchantStoreId?: string;
 }
 
 interface FormState {
@@ -98,9 +103,15 @@ export function DiscountModal({
   onClose,
   discount,
   onSaved,
+  allowedScopes,
+  merchantStoreId,
 }: DiscountModalProps) {
   const isEdit = !!discount;
-  const [form, setForm] = useState<FormState>(EMPTY_FORM);
+  const visibleScopes = allowedScopes ?? (DISCOUNT_SCOPES as unknown as DiscountScope[]);
+  const defaultScope: DiscountScope = visibleScopes.includes("global")
+    ? "global"
+    : visibleScopes[0] ?? "store";
+  const [form, setForm] = useState<FormState>({ ...EMPTY_FORM, scope: defaultScope });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
@@ -117,9 +128,11 @@ export function DiscountModal({
     (async () => {
       try {
         const [p, c, s] = await Promise.all([
-          getProductsForSelect(),
+          merchantStoreId
+            ? getProductsForSelectByStore(merchantStoreId)
+            : getProductsForSelect(),
           getCategoriesForSelect(),
-          getStoresForSelect(),
+          merchantStoreId ? Promise.resolve([]) : getStoresForSelect(),
         ]);
         if (cancelled) return;
         setProducts(p);
@@ -132,9 +145,9 @@ export function DiscountModal({
     return () => {
       cancelled = true;
     };
-  }, [isOpen]);
+  }, [isOpen, merchantStoreId]);
 
-  // Seed form on open (edit → prefill, create → empty).
+  // Seed form on open (edit → prefill, create → empty with correct default scope).
   useEffect(() => {
     if (!isOpen) return;
     setErrors({});
@@ -155,9 +168,14 @@ export function DiscountModal({
         store_ids: discount.store_id ? [discount.store_id] : [],
       });
     } else {
-      setForm(EMPTY_FORM);
+      setForm({
+        ...EMPTY_FORM,
+        scope: defaultScope,
+        // merchant mode: pre-fill their store as the store target
+        store_ids: merchantStoreId ? [merchantStoreId] : [],
+      });
     }
-  }, [discount, isOpen]);
+  }, [discount, isOpen, defaultScope, merchantStoreId]);
 
   // Escape to close
   useEffect(() => {
@@ -373,14 +391,20 @@ export function DiscountModal({
             {/* ── Scope / target ── */}
             <section className="space-y-4">
               <SectionTitle>نطاق التطبيق</SectionTitle>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {DISCOUNT_SCOPES.map((s) => {
+              <div className={`grid gap-2 ${visibleScopes.length === 4 ? "grid-cols-2 sm:grid-cols-4" : visibleScopes.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
+                {visibleScopes.map((s) => {
                   const Icon = SCOPE_ICONS[s];
                   return (
                     <button
                       key={s}
                       type="button"
-                      onClick={() => set("scope", s)}
+                      onClick={() => {
+                        set("scope", s);
+                        // In merchant mode, always keep their store pre-selected
+                        if (s === "store" && merchantStoreId) {
+                          setForm((f) => ({ ...f, scope: s, store_ids: [merchantStoreId] }));
+                        }
+                      }}
                       className={`flex flex-col items-center gap-1.5 px-3 py-3 rounded-2xl text-xs font-bold border transition-all cursor-pointer ${
                         form.scope === s
                           ? "bg-marketplace-accent text-white border-marketplace-accent shadow-md shadow-marketplace-accent/20"
@@ -440,25 +464,32 @@ export function DiscountModal({
               )}
 
               {form.scope === "store" && (
-                <div className="space-y-2">
-                  <Label>
-                    المتاجر المستهدفة
-                    {!isEdit && (
-                      <span className="mr-2 text-marketplace-accent/60 font-medium">
-                        (يمكن اختيار أكثر من متجر)
-                      </span>
-                    )}
-                  </Label>
-                  <MultiSelect
-                    options={storeOptions}
-                    selected={form.store_ids}
-                    onChange={(v) => set("store_ids", v)}
-                    placeholder="اختر المتاجر..."
-                    multiple={!isEdit}
-                    emptyText="لا توجد متاجر"
-                  />
-                  {err("store_ids")}
-                </div>
+                merchantStoreId ? (
+                  <p className="text-sm text-marketplace-text-secondary bg-marketplace-accent/5 border border-marketplace-accent/20 rounded-2xl px-4 py-3 flex items-center gap-2">
+                    <TicketPercent size={16} className="text-marketplace-accent shrink-0" />
+                    سيُطبَّق هذا الخصم على جميع منتجات متجرك.
+                  </p>
+                ) : (
+                  <div className="space-y-2">
+                    <Label>
+                      المتاجر المستهدفة
+                      {!isEdit && (
+                        <span className="mr-2 text-marketplace-accent/60 font-medium">
+                          (يمكن اختيار أكثر من متجر)
+                        </span>
+                      )}
+                    </Label>
+                    <MultiSelect
+                      options={storeOptions}
+                      selected={form.store_ids}
+                      onChange={(v) => set("store_ids", v)}
+                      placeholder="اختر المتاجر..."
+                      multiple={!isEdit}
+                      emptyText="لا توجد متاجر"
+                    />
+                    {err("store_ids")}
+                  </div>
+                )
               )}
 
               {form.scope === "global" && (

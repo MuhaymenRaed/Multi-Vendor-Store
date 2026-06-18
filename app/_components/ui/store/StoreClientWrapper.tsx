@@ -5,6 +5,9 @@ import { AddProductModal } from "@/app/_components/ui/product/AddProductModal";
 import { InfoItem } from "@/app/_components/ui/product/InfoItem";
 import { ManageProductModal } from "@/app/_components/ui/product/ManageProductModal";
 import { ProductModal } from "@/app/_components/ui/product/ProductModal";
+import { StoreDiscountPanel } from "@/app/_components/ui/store/StoreDiscountPanel";
+import { StoreMembersPanel } from "@/app/_components/ui/store/StoreMembersPanel";
+import { isStoreMember } from "@/app/_lib/data-services/store-members-service";
 import { deleteProduct } from "@/app/_lib/data-services/products-service";
 import { getOwnerPhone } from "@/app/_lib/data-services/profile-service";
 import { uploadStoreLogo } from "@/app/_lib/data-services/admin-service";
@@ -29,7 +32,9 @@ import {
   Settings2,
   Share2,
   ShoppingBag,
+  TicketPercent,
   Trash2,
+  Users,
   X,
 } from "lucide-react";
 import Link from "next/link";
@@ -85,6 +90,8 @@ export default function StoreClientWrapper({
   const [deletingProductId, setDeletingProductId] = useState<string | null>(
     null,
   );
+  const [showDiscountPanel, setShowDiscountPanel] = useState(false);
+  const [showMembersPanel, setShowMembersPanel] = useState(false);
 
   const [dealerPhone, setDealerPhone] = useState("");
   const [copied, setCopied] = useState(false);
@@ -146,7 +153,8 @@ export default function StoreClientWrapper({
         setIsAdmin(false);
       } else {
         // Ownership: exact ID match only
-        setIsOwner(user.id === store.owner_id);
+        const owns = user.id === store.owner_id;
+        setIsOwner(owns);
 
         // Admin role: always read from DB, never trust user_metadata (can be stale)
         const { data: profile } = await supabase
@@ -154,7 +162,18 @@ export default function StoreClientWrapper({
           .select("role")
           .eq("id", user.id)
           .single();
-        setIsAdmin(profile?.role === "admin");
+        const admin = profile?.role === "admin";
+        setIsAdmin(admin);
+
+        // Also grant canEdit if the user is a store_member (co_owner or assistant)
+        if (!owns && !admin) {
+          try {
+            const member = await isStoreMember(store.id, user.id);
+            if (member) setIsOwner(true); // treat members like owners for editing
+          } catch {
+            // store_members table may not exist yet — fail silently
+          }
+        }
       }
       // Always fetch owner phone for WhatsApp order redirect
       const ownerPhone = store.phone
@@ -166,7 +185,7 @@ export default function StoreClientWrapper({
       }
     }
     init();
-  }, [store.owner_id, store.phone]);
+  }, [store.owner_id, store.phone, store.id]);
 
   // Fetch discounts client-side so anon visitors see pricing without depending
   // on the server-side SSR context (which requires a Supabase public SELECT
@@ -363,6 +382,30 @@ export default function StoreClientWrapper({
                 <span>{isEditing ? "حفظ" : "تعديل المتجر"}</span>
               </button>
             )}
+            {/* Discount management — owners & members */}
+            {isOwner && (
+              <button
+                onClick={() => setShowDiscountPanel(true)}
+                className="relative group flex items-center gap-2 cursor-pointer px-4 py-3 rounded-xl bg-marketplace-accent/10 border border-marketplace-accent/30 backdrop-blur-md hover:bg-marketplace-accent/20 transition-all text-marketplace-accent"
+                title="إدارة خصومات المتجر"
+              >
+                <TicketPercent size={20} />
+                <span className="text-xs font-bold hidden md:block">خصومات</span>
+              </button>
+            )}
+
+            {/* Team management — primary owner only (only they can add/remove members) */}
+            {isOwner && (
+              <button
+                onClick={() => setShowMembersPanel(true)}
+                className="relative group flex items-center gap-2 cursor-pointer px-4 py-3 rounded-xl bg-blue-500/10 border border-blue-500/30 backdrop-blur-md hover:bg-blue-500/20 transition-all text-blue-500"
+                title="إدارة فريق المتجر"
+              >
+                <Users size={20} />
+                <span className="text-xs font-bold hidden md:block">الفريق</span>
+              </button>
+            )}
+
             <button
               onClick={copyUrl}
               className="relative group flex items-center gap-2 cursor-pointer p-3 rounded-xl bg-marketplace-card/50 border border-marketplace-border backdrop-blur-md hover:bg-marketplace-card-hover transition-all"
@@ -665,6 +708,26 @@ export default function StoreClientWrapper({
         onProductUpdated={handleProductUpdated}
         isAdmin={isAdmin}
       />
+
+      {/* Merchant discount panel — slide-in from left */}
+      <AnimatePresence>
+        {showDiscountPanel && isOwner && (
+          <StoreDiscountPanel
+            storeId={store.id}
+            onClose={() => setShowDiscountPanel(false)}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Team members panel — slide-in from left */}
+      <AnimatePresence>
+        {showMembersPanel && isOwner && (
+          <StoreMembersPanel
+            storeId={store.id}
+            onClose={() => setShowMembersPanel(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

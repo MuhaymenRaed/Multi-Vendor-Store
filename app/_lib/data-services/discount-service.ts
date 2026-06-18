@@ -24,6 +24,56 @@ export async function getDiscounts(): Promise<DiscountWithTarget[]> {
 }
 
 /**
+ * All discounts belonging to a specific store: store-scoped rows + product-scoped
+ * rows for products in that store. Used by the merchant discount panel so owners
+ * only see and manage their own discounts.
+ */
+export async function getStoreDiscounts(
+  storeId: string,
+): Promise<DiscountWithTarget[]> {
+  // Fetch products in this store first (needed for product-scope filter)
+  const { data: storeProducts } = await supabase
+    .from("products")
+    .select("id")
+    .eq("store_id", storeId)
+    .eq("is_deleted", false);
+  const productIds = (storeProducts ?? []).map((p: { id: string }) => p.id);
+
+  const queries: Promise<{ data: DiscountWithTarget[] | null; error: { message: string } | null }>[] = [
+    supabase
+      .from("discounts")
+      .select(TARGET_SELECT)
+      .eq("scope", "store")
+      .eq("store_id", storeId)
+      .order("created_at", { ascending: false }) as unknown as Promise<{ data: DiscountWithTarget[] | null; error: { message: string } | null }>,
+  ];
+
+  if (productIds.length > 0) {
+    queries.push(
+      supabase
+        .from("discounts")
+        .select(TARGET_SELECT)
+        .eq("scope", "product")
+        .in("product_id", productIds)
+        .order("created_at", { ascending: false }) as unknown as Promise<{ data: DiscountWithTarget[] | null; error: { message: string } | null }>,
+    );
+  }
+
+  const results = await Promise.all(queries);
+  for (const r of results) {
+    if (r.error) throw new Error(r.error.message);
+  }
+
+  const combined = results.flatMap((r) => r.data ?? []);
+  const seen = new Set<string>();
+  return combined.filter((d) => {
+    if (seen.has(d.id)) return false;
+    seen.add(d.id);
+    return true;
+  });
+}
+
+/**
  * Currently-relevant discounts for storefront pricing: stored status 'active'
  * and (if a window is set) not yet expired. Final live check is done client-side
  * by `isDiscountLive` so a discount whose start_date just passed is picked up

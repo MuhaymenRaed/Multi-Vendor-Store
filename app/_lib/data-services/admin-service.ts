@@ -246,6 +246,70 @@ export async function updateInquiryStatus(
   if (error) throw new Error(error.message);
 }
 
+/**
+ * Accept a merchant inquiry and automatically create a store for the applicant.
+ * Returns the created store (or null if the user is not yet registered).
+ */
+export async function acceptMerchantInquiry(inquiryId: string): Promise<{
+  store: Record<string, unknown> | null;
+  warning: string | null;
+}> {
+  // 1. Fetch the inquiry
+  const { data: inquiry, error: iqErr } = await supabase
+    .from("merchant_inquiries")
+    .select("*")
+    .eq("id", inquiryId)
+    .single();
+  if (iqErr || !inquiry) throw new Error(iqErr?.message ?? "الطلب غير موجود");
+
+  // 2. Find a registered profile with the same email
+  const { data: profiles } = await supabase
+    .from("profiles")
+    .select("id, full_name, email, phone")
+    .ilike("email", inquiry.email ?? "")
+    .limit(1);
+
+  const profile = profiles?.[0] ?? null;
+
+  let createdStore: Record<string, unknown> | null = null;
+  let warning: string | null = null;
+
+  if (profile) {
+    // 3a. Build a unique slug from the store name
+    const baseSlug = (inquiry.store_name as string)
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9؀-ۿ-]/g, "")
+      .slice(0, 40);
+    const slug = `${baseSlug}-${Date.now().toString(36)}`;
+
+    // 3b. Create the store
+    createdStore = await adminUpsertStore(undefined, {
+      owner_id: profile.id,
+      name: inquiry.store_name,
+      slug,
+      phone: inquiry.phone ?? profile.phone ?? "",
+      is_active: true,
+      is_deleted: false,
+    });
+
+    // 3c. Promote the user to 'seller' role so they can manage their store
+    await supabase
+      .from("profiles")
+      .update({ role: "seller" })
+      .eq("id", profile.id);
+  } else {
+    warning =
+      `المتجر لم يُنشأ تلقائياً — المستخدم (${inquiry.email}) غير مسجّل بعد في المنصة.`;
+  }
+
+  // 4. Mark the inquiry as accepted
+  await updateInquiryStatus(inquiryId, "accepted");
+
+  return { store: createdStore, warning };
+}
+
 // Service for the public form
 export async function submitMerchantInquiry(formData: any) {
   const { error } = await supabase
@@ -352,6 +416,17 @@ export async function getProductsForSelect() {
   const { data, error } = await supabase
     .from("products")
     .select("id, name")
+    .eq("is_deleted", false)
+    .order("name");
+  if (error) throw new Error(error.message);
+  return data || [];
+}
+
+export async function getProductsForSelectByStore(storeId: string) {
+  const { data, error } = await supabase
+    .from("products")
+    .select("id, name")
+    .eq("store_id", storeId)
     .eq("is_deleted", false)
     .order("name");
   if (error) throw new Error(error.message);

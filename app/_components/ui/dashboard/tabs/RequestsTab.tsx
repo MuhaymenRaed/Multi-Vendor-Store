@@ -1,11 +1,13 @@
 "use client";
 
 import {
+  acceptMerchantInquiry,
   getMerchantInquiries,
   updateInquiryStatus,
 } from "@/app/_lib/data-services/admin-service";
 import { motion } from "framer-motion";
 import {
+  CheckCircle,
   Clock,
   Loader2,
   Mail,
@@ -30,23 +32,46 @@ export function RequestsTab() {
     try {
       const data = await getMerchantInquiries();
       setRequests(data);
-    } catch (err) {
+    } catch {
       toast.error("فشل في تحميل طلبات الانضمام");
     } finally {
       setLoading(false);
     }
   }
 
-  async function onAction(id: string, type: "accepted" | "rejected") {
+  async function handleAccept(id: string) {
     setProcessingId(id);
     try {
-      await updateInquiryStatus(id, type);
-      toast.success(
-        type === "accepted" ? " تم قبول الطلب كـ 'مؤهل'" : " تم رفض الطلب",
-      );
+      const { store, warning } = await acceptMerchantInquiry(id);
+
+      if (store) {
+        toast.success(
+          `✅ تم قبول الطلب وإنشاء المتجر "${(store as any).name}" تلقائياً`,
+          { duration: 5000 },
+        );
+      } else {
+        toast(warning ?? "تم قبول الطلب لكن المتجر لم يُنشأ", {
+          icon: "⚠️",
+          duration: 6000,
+        });
+      }
+
       setRequests((prev) => prev.filter((r) => r.id !== id));
     } catch (err) {
-      toast.error("حدث خطأ أثناء التحديث");
+      toast.error(err instanceof Error ? err.message : "حدث خطأ أثناء القبول");
+    } finally {
+      setProcessingId(null);
+    }
+  }
+
+  async function handleReject(id: string) {
+    setProcessingId(id);
+    try {
+      await updateInquiryStatus(id, "rejected");
+      toast.success("تم رفض الطلب");
+      setRequests((prev) => prev.filter((r) => r.id !== id));
+    } catch {
+      toast.error("حدث خطأ أثناء الرفض");
     } finally {
       setProcessingId(null);
     }
@@ -76,6 +101,12 @@ export function RequestsTab() {
             {requests.length}
           </p>
         </div>
+      </div>
+
+      {/* Hint banner */}
+      <div className="flex items-center gap-3 bg-green-500/5 border border-green-500/20 rounded-2xl px-4 py-3 text-sm text-green-600 dark:text-green-400 font-medium">
+        <CheckCircle size={16} className="shrink-0" />
+        عند الضغط على "قبول وإنشاء متجر"، سيتم إنشاء المتجر تلقائياً وربطه بحساب التاجر إن كان مسجّلاً.
       </div>
 
       <div className="space-y-4">
@@ -122,20 +153,23 @@ export function RequestsTab() {
 
               <div className="flex items-center gap-3 w-full md:w-auto">
                 <button
-                  onClick={() => onAction(req.id, "accepted")}
+                  onClick={() => handleAccept(req.id)}
                   disabled={!!processingId}
-                  className="flex-1 md:flex-none cursor-pointer bg-green-500/10 text-green-500 px-6 py-2.5 rounded-xl font-bold border border-green-500/20 hover:bg-green-500/20"
+                  className="flex-1 md:flex-none cursor-pointer bg-green-500/10 text-green-500 px-5 py-2.5 rounded-xl font-bold border border-green-500/20 hover:bg-green-500/20 flex items-center justify-center gap-2 disabled:opacity-60 transition-all"
                 >
                   {processingId === req.id ? (
                     <Loader2 size={16} className="animate-spin" />
                   ) : (
-                    "قبول كمرشح"
+                    <>
+                      <CheckCircle size={16} />
+                      قبول وإنشاء متجر
+                    </>
                   )}
                 </button>
                 <button
-                  onClick={() => onAction(req.id, "rejected")}
+                  onClick={() => handleReject(req.id)}
                   disabled={!!processingId}
-                  className="flex-1 md:flex-none cursor-pointer bg-red-500/10 text-red-500 px-6 py-2.5 rounded-xl font-bold border border-red-500/20"
+                  className="flex-1 md:flex-none cursor-pointer bg-red-500/10 text-red-500 px-5 py-2.5 rounded-xl font-bold border border-red-500/20 hover:bg-red-500/20 transition-all disabled:opacity-60"
                 >
                   رفض
                 </button>
